@@ -39,6 +39,10 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
 
   useEffect(() => {
     void load()
+    // Auto-refresh: the agent can write memory via its `memory` tool while the
+    // panel is open, so poll every few seconds to keep the view in sync.
+    const id = setInterval(() => void load(), 5000)
+    return () => clearInterval(id)
   }, [load])
 
   const add = async () => {
