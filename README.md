@@ -33,12 +33,17 @@ The agent has three kinds of knowledge — don't confuse them:
 | Tier | File | Analogy | Loaded | Who writes |
 |---|---|---|---|---|
 | **Standing instructions** | `~/.dsh/AGENTS.md` | manual + notebook index | **every session, automatically** | you (static) |
-| **Sticky notes** | `~/.dsh/memory/MEMORY.md` | agent's quick memos (2200-char budget) | agent reads on demand | agent / panel / CLI |
+| **Sticky notes** | `~/.dsh/memory/MEMORY.md` | agent's quick memos (2200-char budget) | agent reads on demand; **pinned ones are injected every turn** | agent / panel / CLI / auto-extraction |
 | **Experience library** | `~/.dsh/memory/*.md` | your curated topic docs | keyword search | you |
 
 One line: **AGENTS.md = always-carried instructions; sticky notes = the agent's own quick
 memos; experience library = docs you look up when needed.** AGENTS.md lives outside this
 plugin's panel — it is loaded into every session automatically.
+
+**Pinned (常驻) sticky notes**: pin a note with 📌 in the panel and it is injected
+into the prompt every turn — key facts (your language, signing identity, hard
+conventions) are always present without a tool call. Nothing pinned → nothing
+injected. Pins live in `~/.dsh/memory/pinned.json`.
 
 
 ## Quick Start
@@ -101,7 +106,7 @@ moment you install the bundle — no preset step needed:
 
 - `memory` tool (sticky notes + experience-library search)
 - `skill_manage` tool
-- `memory-nudge` (review reminders), `memory-guidance` (usage guidance), and `memory-auto` (automatic fact extraction after a session idles)
+- `memory-nudge` (review reminders), `memory-guidance` (usage guidance), `memory-auto` (automatic fact extraction), and `memory-inject` (pinned notes injected into every prompt)
 - skill-usage telemetry, curator-core governance, and the Web GUI panel
 
 The older `mind-active` / `mind-light` presets are kept only for backward

@@ -33,11 +33,13 @@ agent 有三类知识，别搞混：
 | 层 | 文件 | 比喻 | 加载方式 | 谁能写 |
 |---|---|---|---|---|
 | **必背指令** | `~/.dsh/AGENTS.md` | 操作手册 + 笔记本索引 | **每会话自动加载** | 你（静态） |
-| **便签** | `~/.dsh/memory/MEMORY.md` | agent 的快捷备忘（2200 字符预算） | agent 按需读 | agent / 面板 / CLI |
+| **便签** | `~/.dsh/memory/MEMORY.md` | agent 的快捷备忘（2200 字符预算） | agent 按需读；**钉住的每轮注入提示词** | agent / 面板 / CLI / 自动提取 |
 | **经验库** | `~/.dsh/memory/*.md` | 你整理的主题资料 | 关键词搜索 | 你（维护文档） |
 
 一句话：**AGENTS.md = 一直带着的指令；便签 = agent 自己写的备忘；经验库 = 你要查的详细资料。**
 AGENTS.md 在插件的面板之外——它每个会话自动加载。
+
+**常驻便签**：在面板里用 📌 钉住一条便签，它就会**每轮注入提示词**——关键事实（你的语言偏好、署名、硬性约定）不用调工具就始终在场。没钉 → 不注入。钉住状态存在 `~/.dsh/memory/pinned.json`。
 
 
 ## 快速开始
@@ -94,7 +96,7 @@ dsh plugin --profile web add ./dsh-mind
 
 - `memory` 工具（便签 + 经验库检索）
 - `skill_manage` 工具
-- `memory-nudge`（记忆提醒）、`memory-guidance`（使用引导）、`memory-auto`（会话空闲后自动提取事实）
+- `memory-nudge`（记忆提醒）、`memory-guidance`（使用引导）、`memory-auto`（自动提取事实）、`memory-inject`（常驻便签注入提示词）
 - skill-usage 遥测、curator-core 治理、Web GUI 面板
 
 旧的 `mind-active` / `mind-light` 预设仅作兼容保留，不再提供额外功能。
