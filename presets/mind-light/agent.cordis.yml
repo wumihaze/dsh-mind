@@ -18,3 +18,7 @@
 # 系统提示：教导 agent 如何正确使用记忆系统。
 - id: memory-guidance
   name: '@wumihaze/dsh-mind/memory/guidance'
+
+# 提供 memory 工具：list / search / add / replace / remove。
+- id: tool-memory
+  name: '@wumihaze/dsh-mind/tool/memory'

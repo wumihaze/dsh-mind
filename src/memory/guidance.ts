@@ -28,7 +28,15 @@ export interface Config {
 }
 
 const GUIDANCE_TEXT = [
-  'You have a personal skill library at ~/.dsh/skills/. Skills are reusable instructions for recurring tasks.',
+  'You have persistent memory at ~/.dsh/memory/MEMORY.md and a personal skill library at ~/.dsh/skills/.',
+  '',
+  'Persistent memory (use the `memory` tool):',
+  '- Memory holds cross-session facts, preferences, and lessons.',
+  '- Use `memory list` to see all entries, `memory search` to find one, `memory add` to record a new fact, `memory replace`/`memory remove` to maintain entries.',
+  '- Keep entries short bullet notes; the total budget is 2200 characters.',
+  '',
+  'Skills (use the `skill_manage` tool):',
+  '- Skills are reusable instructions for recurring tasks.',
   '',
   'When to use skills:',
   '- Before starting a task you have done before, check if a relevant skill exists.',

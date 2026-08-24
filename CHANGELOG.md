@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-08-25
+
+### Added
+
+- **`memory` tool** (agent-plane, `@wumihaze/dsh-mind/tool/memory`): the agent can
+  now `list` / `search` / `add` / `replace` / `remove` entries in
+  `~/.dsh/memory/MEMORY.md` — the same store the Web GUI panel and the CLI use.
+  Previously the memory file was only reachable by GUI/CLI; the nudge reminded
+  the agent to update memory it could not access. The tool is added to the
+  `mind-active`, `mind-light`, and (user) `cordis-tuned` presets.
+- `memory-nudge` now resets its signal on `memory` writes (add/replace/remove)
+  as well as `skill_manage` writes (create/patch), and the guidance text teaches
+  the `memory` tool.
+
 ## [0.1.12] - 2026-08-25
 
 ### Fixed

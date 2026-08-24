@@ -20,6 +20,13 @@
 - id: memory-guidance
   name: '@wumihaze/dsh-mind/memory/guidance'
 
+# ── Memory ───────────────────────────────────────────────────────────────
+
+# 提供 memory 工具：list / search / add / replace / remove。
+# agent 用它读改写 ~/.dsh/memory/MEMORY.md（GUI 面板和 CLI 同一份）。
+- id: tool-memory
+  name: '@wumihaze/dsh-mind/tool/memory'
+
 # ── Skill lifecycle ──────────────────────────────────────────────────────
 
 # 提供 skill_manage 工具：archive / restore / list / status / prune。
