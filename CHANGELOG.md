@@ -176,3 +176,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: React 18 + CSS Modules, bundled as DSH Web third-party plugin
 - Data: `~/.dsh/memory/MEMORY.md`, `~/.dsh/skills/`, `~/.dsh/skills/.system/curator/`
 - Requirements: DSH ≥ 0.1.1-rc, Node.js ≥ 20
+
+## [0.1.11] - 2026-08-25
+
+### Fixed
+
+- **Skills / Curator / Snapshots tabs returned HTTP 404**: the memory GET and POST
+  handlers both registered `kind: 'exact', path: '/dsh-mind/memory'`. The
+  webserver rejects duplicate (kind, path) registrations, so the second
+  `/dsh-mind/memory` threw and `mountMindRoutes` aborted before registering
+  skills/curator/snapshots. Merged GET+POST into one exact route dispatched on
+  method.

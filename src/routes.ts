@@ -142,33 +142,29 @@ export function mountMindRoutes(host: MindHost): () => void {
     }),
   )
 
-  // GET /dsh-mind/memory
-  disposes.push(
-    host.webServer.register({
-      kind: 'exact',
-      path: '/dsh-mind/memory',
-      handler: async (_req: IncomingMessage, res: ServerResponse) => {
-        const entries = await readMemory()
-        const totalChars = entries.join('\n').length
-        json(res, { entries, totalChars, budget: 2200 })
-      },
-    }),
-  )
-
-  // POST /dsh-mind/memory
+  // GET|POST /dsh-mind/memory — one exact route, dispatched on method. The
+  // webserver rejects duplicate (kind, path) registrations, and a second exact
+  // `/dsh-mind/memory` would abort the whole mount before the skills/curator/
+  // snapshots routes register (they'd 404).
   disposes.push(
     host.webServer.register({
       kind: 'exact',
       path: '/dsh-mind/memory',
       handler: async (req: IncomingMessage, res: ServerResponse) => {
-        if (req.method !== 'POST') return err(res, 'method not allowed', 405)
-        const body = await readBody(req)
-        const text = typeof body.text === 'string' ? body.text.trim() : ''
-        if (!text) return err(res, 'text is required')
+        if (req.method === 'POST') {
+          const body = await readBody(req)
+          const text = typeof body.text === 'string' ? body.text.trim() : ''
+          if (!text) return err(res, 'text is required')
+          const entries = await readMemory()
+          entries.push(text)
+          await writeMemory(entries)
+          json(res, { entries, totalChars: entries.join('\n').length }, 201)
+          return
+        }
+        if (req.method !== 'GET') return err(res, 'method not allowed', 405)
         const entries = await readMemory()
-        entries.push(text)
-        await writeMemory(entries)
-        json(res, { entries, totalChars: entries.join('\n').length }, 201)
+        const totalChars = entries.join('\n').length
+        json(res, { entries, totalChars, budget: 2200 })
       },
     }),
   )
