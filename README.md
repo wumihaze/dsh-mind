@@ -2,7 +2,7 @@
 
 > Give your DSH agent a brain — persistent memory, an experience library, and self-curating skills.
 
-A DSH bundle that adds **cross-session memory** and **skill lifecycle management** to any DSH agent profile. All data stays local. No external services required.
+A DSH bundle that adds **cross-session memory** and **skill lifecycle management** to any DSH agent profile. All data stays local; the only optional external service is a **free-tier cloud vector store for semantic search** (SiliconFlow + Qdrant), which is **off by default**.
 
 **[中文文档](./README.zh.md)**
 
@@ -12,6 +12,7 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 |---|---|
 | **Sticky notes** | Agent-facing quick memos (`MEMORY.md`, 2200-char budget), read/written by the agent's `memory` tool, the GUI, and the CLI |
 | **Experience library** | Your per-topic Markdown files (`comfyui.md`, `dsh.md`, …) are surfaced in the GUI and searchable by the agent |
+| **Semantic search** *(optional)* | Hybrid `memory search`: SiliconFlow bge-m3 embeds notes + experience library into a free Qdrant vector store. Off by default — set `DSH_MIND_EMBED_KEY` / `DSH_MIND_VECTOR_URL` / `DSH_MIND_VECTOR_KEY` to enable |
 | **Skill usage tracking** | Tracks which skills are used, when, and how often |
 | **Skill governance** | Auto-archives stale skills (30d → stale, 90d → archived), with snapshots & rollback |
 | **CLI** | `dsh-mind status / run / archive / restore / memory / install-preset ...` |

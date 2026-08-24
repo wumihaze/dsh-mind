@@ -19,6 +19,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { readFile, writeFile, mkdir, readdir, rm } from 'node:fs/promises'
 import { readPins, togglePin } from './memory/pins.ts'
+import { resolveSearchConfig, semanticSearch } from './search/index.ts'
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -207,6 +208,31 @@ export function mountMindRoutes(host: MindHost): () => void {
         const parts = url.pathname.split('/')
         const last = parts[parts.length - 1]
         const idx = Number(last)
+
+        // GET /dsh-mind/memory/search?q= — semantic search over memory.
+        // Sits on this prefix route (the exact /dsh-mind/memory route can only
+        // carry GET/POST, and 'search' would otherwise fall into the index
+        // parser below).
+        if (req.method === 'GET' && last === 'search') {
+          const q = (url.searchParams.get('q') ?? '').trim()
+          if (!q) return err(res, 'q is required')
+          const cfg = resolveSearchConfig()
+          if (!cfg) return json(res, { semantic: false, entries: [], topics: [] })
+          const hits = await semanticSearch(DSH_HOME, q, cfg)
+          const list = hits ?? []
+          const entries = list
+            .filter((h) => h.kind === 'memo')
+            .map((h) => ({ index: h.index, text: h.text, score: Number(h.score.toFixed(3)) }))
+          const topics = list
+            .filter((h) => h.kind === 'topic')
+            .map((h) => ({
+              name: h.name,
+              title: h.title,
+              snippet: h.text.length > 140 ? `${h.text.slice(0, 140)}…` : h.text,
+              score: Number(h.score.toFixed(3)),
+            }))
+          return json(res, { semantic: true, query: q, entries, topics })
+        }
 
         // POST /dsh-mind/memory/<idx>/pin — toggle 常驻 (always-inject) flag
         if (req.method === 'POST') {

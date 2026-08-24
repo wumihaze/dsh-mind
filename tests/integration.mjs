@@ -383,6 +383,177 @@ test('perf: skill usage list with 100 skills < 100ms', () => {
   assert(elapsed < 100, `list took ${elapsed.toFixed(1)}ms (limit 100ms)`)
 })
 
+// ── 7. Semantic search (mocked cloud) ───────────────────────────────────
+console.log('\n━━━ Semantic search (mocked fetch) ━━━')
+
+// Credentials via env, as a real user would configure them.
+process.env.DSH_MIND_EMBED_KEY = 'test-embed-key'
+process.env.DSH_MIND_VECTOR_KEY = 'test-vector-key'
+process.env.DSH_MIND_VECTOR_URL = 'https://mock.qdrant.test'
+process.env.DSH_MIND_EMBED_URL = 'https://mock.siliconflow.test/v1/embeddings'
+
+const {
+  resolveSearchConfig,
+  semanticSearch,
+  syncIfStale,
+  reindex,
+  chunkText,
+  loadDocs,
+  hashOf,
+} = await import('../lib/search/index.js')
+
+function fakeVector(text) {
+  // Deterministic pseudo-vector in [0,1): identical text => identical vector.
+  const arr = new Array(1024)
+  let seed = 0
+  for (const ch of String(text)) seed = (seed * 31 + (ch.codePointAt(0) ?? 0)) >>> 0
+  for (let i = 0; i < 1024; i++) {
+    seed = (seed * 1103515245 + 12345) >>> 0
+    arr[i] = (seed >>> 8) / 0x1000000
+  }
+  return arr
+}
+
+let upserted = []
+let deleted = []
+let searchHits = []
+const savedFetch = globalThis.fetch
+globalThis.fetch = async (url, init) => {
+  const u = new URL(String(url))
+  const path = u.pathname
+  const method = init?.method ?? 'GET'
+  if (path.endsWith('/collections/dsh-mind-memory') && method === 'GET') {
+    return new Response(JSON.stringify({ result: { points_count: upserted.length } }))
+  }
+  if (path.endsWith('/collections/dsh-mind-memory') && method === 'PUT') {
+    return new Response(JSON.stringify({ result: { status: 'ok' } }))
+  }
+  if (path.endsWith('/points/search')) {
+    const limit = JSON.parse(init?.body ?? '{}').limit ?? 8
+    return new Response(JSON.stringify({ result: searchHits.slice(0, limit).map((h) => ({ id: h.id, score: h.score, payload: {} })) }))
+  }
+  if (path.endsWith('/points') && method === 'PUT') {
+    // upsert URL is /points?wait=true — query is in u.search, not pathname
+    for (const p of JSON.parse(init?.body ?? '{}').points ?? []) upserted.push(p)
+    return new Response(JSON.stringify({ result: { status: 'ok' } }))
+  }
+  if (path.endsWith('/points/delete')) {
+    const body = JSON.parse(init?.body ?? '{}')
+    if (Array.isArray(body.points)) deleted.push(...body.points)
+    else upserted = [] // empty filter {} → wipe all (reindex)
+    return new Response(JSON.stringify({ result: { status: 'ok' } }))
+  }
+  if (path.includes('/v1/embeddings')) {
+    const body = JSON.parse(init?.body ?? '{}')
+    const input = Array.isArray(body.input) ? body.input : [body.input]
+    return new Response(JSON.stringify({ data: input.map((t, i) => ({ index: i, embedding: fakeVector(t) })) }))
+  }
+  throw new Error(`unexpected fetch: ${method} ${path}`)
+}
+
+// Fresh memory content for the search tests.
+writeFileSync(join(HOME, 'memory', 'MEMORY.md'), '- note one\n- note two\n', 'utf-8')
+writeFileSync(join(HOME, 'memory', 'top.md'), '# Top\ncontent here\n', 'utf-8')
+
+test('resolveSearchConfig: enabled when env credentials present', () => {
+  const cfg = resolveSearchConfig()
+  assert(cfg !== null, 'expected config to resolve')
+  assertEq(cfg.embedApiKey, 'test-embed-key')
+})
+
+test('resolveSearchConfig: null when credentials absent', () => {
+  const saved = {
+    e: process.env.DSH_MIND_EMBED_KEY,
+    v: process.env.DSH_MIND_VECTOR_KEY,
+    u: process.env.DSH_MIND_VECTOR_URL,
+  }
+  delete process.env.DSH_MIND_EMBED_KEY
+  delete process.env.DSH_MIND_VECTOR_KEY
+  delete process.env.DSH_MIND_VECTOR_URL
+  try {
+    assert(resolveSearchConfig() === null, 'expected null without credentials')
+  } finally {
+    process.env.DSH_MIND_EMBED_KEY = saved.e
+    process.env.DSH_MIND_VECTOR_KEY = saved.v
+    process.env.DSH_MIND_VECTOR_URL = saved.u
+  }
+})
+
+test('hashOf: stable 16-hex content hash', () => {
+  const h = hashOf('hello')
+  assertEq(h.length, 16)
+  assert(/^[0-9a-f]{16}$/.test(h))
+  assertEq(h, hashOf('hello'))
+  assert(h !== hashOf('world'))
+})
+
+test('chunkText: splits long sections within size', () => {
+  const long = '# H\n' + 'x'.repeat(1200)
+  const chunks = chunkText(long, 500)
+  assert(chunks.length >= 3, `expected >=3 chunks, got ${chunks.length}`)
+  assert(chunks.every((c) => c.length <= 500), 'every chunk within size')
+})
+
+test('loadDocs: indexes memos + topic chunks', () => {
+  const docs = loadDocs(HOME, 500)
+  assert(docs.some((d) => d.kind === 'memo' && d.text === 'note one'), 'memo indexed')
+  const tp = docs.find((d) => d.kind === 'topic' && d.name === 'top')
+  assert(tp, 'topic doc indexed')
+  assertEq(tp.title, 'Top')
+})
+
+await testAsync('first sync embeds and upserts every doc', async () => {
+  upserted = []
+  deleted = []
+  const cfg = resolveSearchConfig()
+  assert(cfg !== null)
+  const ok = await syncIfStale(HOME, cfg)
+  assert(ok)
+  const docs = loadDocs(HOME, 500)
+  assertEq(upserted.length, docs.length)
+  assert(upserted.every((p) => Array.isArray(p.vector) && p.vector.length === 1024), 'all points have 1024-dim vectors')
+})
+
+await testAsync('second sync is a no-op', async () => {
+  const before = upserted.length
+  await syncIfStale(HOME, resolveSearchConfig())
+  assertEq(upserted.length, before, 'no new upserts when already in sync')
+})
+
+await testAsync('semanticSearch maps hit id back to local text', async () => {
+  const docs = loadDocs(HOME, 500)
+  const two = docs.find((d) => d.kind === 'memo' && d.text === 'note two')
+  assert(two, 'note two doc present')
+  searchHits = [{ id: two.id, score: 0.91 }]
+  const hits = await semanticSearch(HOME, 'whatever query', resolveSearchConfig())
+  assert(hits && hits.length === 1, `expected 1 hit, got ${hits?.length}`)
+  assertEq(hits[0].kind, 'memo')
+  assertEq(hits[0].text, 'note two')
+  assertEq(hits[0].index, 1)
+})
+
+await testAsync('editing a note syncs only the delta', async () => {
+  const docsBefore = loadDocs(HOME, 500)
+  const two = docsBefore.find((d) => d.kind === 'memo' && d.text === 'note two')
+  assert(two)
+  const before = upserted.length
+  const delBefore = deleted.length
+  writeFileSync(join(HOME, 'memory', 'MEMORY.md'), '- note one\n- note changed\n', 'utf-8')
+  const ok = await syncIfStale(HOME, resolveSearchConfig())
+  assert(ok)
+  assert(deleted.includes(two.id), 'old note id deleted from vector store')
+  assertEq(upserted.length, before + 1, 'exactly one new point upserted')
+  assertEq(deleted.length, delBefore + 1)
+})
+
+await testAsync('reindex rebuilds the full index', async () => {
+  await reindex(HOME, resolveSearchConfig())
+  const docs = loadDocs(HOME, 500)
+  assertEq(upserted.length, docs.length)
+})
+
+globalThis.fetch = savedFetch
+
 // ── Cleanup ─────────────────────────────────────────────────────────────
 rmSync(HOME, { recursive: true, force: true })
 

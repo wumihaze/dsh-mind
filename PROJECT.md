@@ -5,7 +5,7 @@
 
 - 仓库：`github.com/wumihaze/dsh-mind`（public）
 - npm：`@wumihaze/dsh-mind`（public，最新见 `CHANGELOG.md`）
-- 当前版本：0.1.30
+- 当前版本：0.1.32
 - 授权：MIT
 
 ---
@@ -14,7 +14,7 @@
 
 一句话：**一个 DSH bundle，装完即给所有 agent 增加跨会话记忆（便签 + 常驻注入 + 经验库）和技能自管理（skill_manage + 治理），附 Web GUI、CLI、自动提取。**
 
-所有数据本地文件存储（`~/.dsh/`），无外部服务、无数据库。安装即用，所有能力 host 层全局生效，不需要装预设。
+所有数据本地文件存储（`~/.dsh/`），无外部服务、无数据库。安装即用，所有能力 host 层全局生效，不需要装预设。（可选）语义检索用免费云端向量库（SiliconFlow embed + Qdrant），**默认关闭**，需要显式配 key 才启用。
 
 ## 2. 核心价值 / 定位
 
@@ -35,6 +35,7 @@
 | **常驻便签注入**（pinned） | 📌 钉住 → `memory-inject` 每轮注入提示词 | GUI 钉 |
 | **自动提取**（memory-auto） | 会话空闲防抖后 LLM 提取事实 | 自动 |
 | **经验库**（主题 md 文件） | GUI 显示 + agent `memory search` 检索 | GUI / agent |
+| **语义检索**（可选） | SiliconFlow bge-m3 embed + Qdrant 免费向量库，`memory search` 混合（默认关） | 全端（需配 key） |
 | **技能管理**（skill_manage） | agent 创建/修改/归档技能 | agent |
 | **技能使用遥测**（skill-usage） | 记录使用次数/来源/钉 | 自动 |
 | **技能治理**（curator） | stale(30d)→归档(90d)、快照、回滚 | CLI / GUI |
@@ -143,6 +144,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | memory-inject | enabled / maxChars | true / 600 | 常驻注入开关/上限 |
 | memory 工具 | budget | 2200 | 便签字符预算 |
 | tool-skill-manage | skillsRoot | ~/.dsh/skills | 技能根目录 |
+| tool-memory | search.{enabled, embedUrl, embedModel, embedApiKey, vectorUrl, vectorApiKey, collection, topK, chunkSize} | 关 | 语义检索；只设 env `DSH_MIND_EMBED_KEY`+`DSH_MIND_VECTOR_URL`+`DSH_MIND_VECTOR_KEY` 即自动启用 |
 
 ## 10. 数据存储（全部 `~/.dsh/`，卸载不删）
 
@@ -152,6 +154,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 ├── memory/
 │   ├── MEMORY.md                      # 便签（2200 预算）
 │   ├── pinned.json                    # 常驻标记
+│   ├── .vector-index.json             # 语义检索索引清单（启用后生成）
 │   └── *.md                           # 经验库（comfyui/dsh/prefs…）
 ├── skills/
 │   ├── <name>/SKILL.md                # 活动技能
@@ -190,6 +193,8 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | 0.1.28 | **常驻便签注入（memory-inject + 📌）** |
 | 0.1.29 | pin 路由逻辑修复 |
 | 0.1.30 | 文档同步 |
+| 0.1.31 | PROJECT.md 项目书 + 文档同步 |
+| 0.1.32 | **语义检索**（SiliconFlow bge-m3 embed + Qdrant 免费向量库，`memory search` 混合，默认关） |
 
 ## 12. 开发 / 发布流程
 
@@ -212,7 +217,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | 常驻注入按需 | 钉多少花多少；本地模型无 token 顾虑可多钉 |
 | 自动提取默认开 | 每 10 回合+空闲 90s 提取；过滤密钥/去重/预算 |
 | 便签 2200 预算 | 保持精简；超了拒绝新增（三端一致） |
-| 纯文件存储 | 无 DB、可读可改、卸载不删；但无向量语义检索 |
+| 纯文件存储 | 无 DB、可读可改、卸载不删；语义检索为可选云端增强（SiliconFlow + Qdrant 免费档），默认关，正文不出本地 |
 | host 层全局 | 所有 agent 默认获得；可按行 disabled 关闭 |
 
 **边界情况已处理**：全新安装（无目录自动建）、Windows 路径、空记忆/空技能、越界索引、非法主题名、重复创建、超预算、密钥过滤、去重。
@@ -221,7 +226,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 
 - [x] 自动提取（memory-auto）
 - [x] 常驻注入（memory-inject）
-- [ ] 便签语义检索（embedding，本地向量）
+- [x] 便签语义检索（embedding，全云端免费向量库：SiliconFlow bge-m3 + Qdrant）
 - [ ] 治理快照的 Web 可视化增强
 - [ ] 便签跨 agent 共享开关
 - [ ] 自动提取的整合模式（满预算时 LLM 合并而非跳过）

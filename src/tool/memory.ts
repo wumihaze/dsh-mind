@@ -14,6 +14,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { dshHomePath } from '@deepseek-ai/dsh-home-paths'
 import { prunePins, readPins } from '../memory/pins.ts'
+import { resolveSearchConfig, semanticSearch, type MemoHit, type SearchConfig, type TopicHit } from '../search/index.ts'
 
 /** Plugin name for the Loader manifest. */
 export const name = 'dsh-tool-memory'
@@ -32,6 +33,8 @@ export interface Config {
   memoryRoot?: string
   /** Character budget before "add" is refused. Defaults to `2200`. */
   budget?: number
+  /** Semantic search (embedding + cloud vector store). Off unless enabled / credentials present. */
+  search?: SearchConfig
 }
 
 /** Absolute path of the memory file. */
@@ -80,6 +83,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const root = config.memoryRoot ?? dshHomePath()
   const budget = config.budget ?? DEFAULT_BUDGET
   const path = memoryPath(root)
+  const searchCfg = resolveSearchConfig(config.search)
 
   const tool = defineTool({
     name: 'memory',
@@ -101,7 +105,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       },
       query: {
         type: 'string',
-        description: 'Search query (required for "search"). Case-insensitive substring match.',
+        description: 'Search query (required for "search"). Case-insensitive substring match, augmented by semantic search when configured.',
       },
       index: {
         type: 'integer',
@@ -129,6 +133,7 @@ export function apply(ctx: Context, config: Config = {}): void {
                 index: { type: 'integer' },
                 text: { type: 'string' },
                 pinned: { type: 'boolean' },
+                semantic: { type: 'boolean' },
               },
             },
           },
@@ -140,9 +145,11 @@ export function apply(ctx: Context, config: Config = {}): void {
               properties: {
                 name: { type: 'string' },
                 title: { type: 'string' },
+                snippet: { type: 'string' },
               },
             },
           },
+          semantic: { type: 'boolean' },
         },
       },
       render: (_args, value) => [{ type: 'text', text: formatOutput(value) }],
@@ -176,7 +183,38 @@ export function apply(ctx: Context, config: Config = {}): void {
         const topicHits = readTopics(root)
           .filter((tp) => `${tp.name} ${tp.title} ${tp.text}`.toLowerCase().includes(q))
           .map((tp) => ({ name: tp.name, title: tp.title }))
-        return { action, status: 'ok', query: q, count: hits.length, entries: hits, topics: topicHits }
+        // Semantic search augments keyword hits when configured; never blocks
+        // — on any failure it returns null and we fall back to keyword-only.
+        const semantic = searchCfg ? await semanticSearch(root, q, searchCfg) : null
+        let mergedEntries: Array<{ index: number; text: string; pinned: boolean; semantic?: true }> = hits
+        let mergedTopics: Array<{ name: string; title: string; snippet?: string }> = topicHits
+        if (semantic && semantic.length > 0) {
+          const memoHits = semantic.filter((h): h is MemoHit => h.kind === 'memo')
+          const topicSemHits = semantic.filter((h): h is TopicHit => h.kind === 'topic')
+          const seenIdx = new Set(hits.map((h) => h.index))
+          const extra = memoHits
+            .filter((h) => !seenIdx.has(h.index))
+            .map((h) => ({ index: h.index, text: h.text, pinned: pinned.has(h.text), semantic: true as const }))
+          if (extra.length > 0) mergedEntries = [...hits, ...extra]
+          const seenName = new Set(topicHits.map((t) => t.name))
+          const extraTopics = topicSemHits
+            .filter((t) => !seenName.has(t.name))
+            .map((t) => ({
+              name: t.name,
+              title: t.title,
+              snippet: t.text.length > 140 ? `${t.text.slice(0, 140)}…` : t.text,
+            }))
+          if (extraTopics.length > 0) mergedTopics = [...topicHits, ...extraTopics]
+        }
+        return {
+          action,
+          status: 'ok',
+          query: q,
+          count: mergedEntries.length,
+          entries: mergedEntries,
+          topics: mergedTopics,
+          semantic: semantic !== null,
+        }
       }
 
       if (action === 'add') {
@@ -252,14 +290,22 @@ function formatOutput(value: Record<string, unknown>): string {
     const q = value.query as string
     const count = value.count as number
     const topicCount = topics?.length ?? 0
+    const sem = value.semantic as boolean | undefined
     if (count === 0 && topicCount === 0) return `No memory matches "${q}".`
     parts.push(`${count} quick entry match(es) for "${q}":`)
-    for (const e of entries ?? []) parts.push(`[${e.index}] ${e.text}`)
+    for (const e of entries ?? []) {
+      const entry = e as { index: number; text: string; semantic?: boolean }
+      parts.push(`[${entry.index}] ${entry.text}${entry.semantic ? ' (semantic)' : ''}`)
+    }
     if (count === 0) parts.push('(no quick entries matched)')
     if (topicCount > 0) {
       parts.push(`${topicCount} topic file(s) match:`)
-      for (const tp of topics ?? []) parts.push(`- ${tp.title} (${tp.name}.md)`)
+      for (const tp of topics ?? []) {
+        const topic = tp as { name: string; title: string; snippet?: string }
+        parts.push(`- ${topic.title} (${topic.name}.md)${topic.snippet ? `: ${topic.snippet}` : ''}`)
+      }
     }
+    if (sem) parts.push('(semantic search active)')
     return parts.join('\n')
   }
 

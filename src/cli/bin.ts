@@ -12,6 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rename
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { reindex, resolveSearchConfig, semanticSearch } from '../search/index.ts'
 
 // ─── DSH home resolution ────────────────────────────────────────────────────────
 
@@ -357,7 +358,7 @@ function cmdMemoryAdd(text: string): number {
   return 0
 }
 
-function cmdMemorySearch(keyword: string): number {
+async function cmdMemorySearch(keyword: string): Promise<number> {
   const file = MEMORY_FILE()
   if (!existsSync(file)) {
     console.log('No memory file found.')
@@ -373,15 +374,47 @@ function cmdMemorySearch(keyword: string): number {
       hits.push({ line: i + 1, text: line.trim() })
     }
   }
-  if (hits.length === 0) {
+  if (hits.length > 0) {
+    console.log(`${hits.length} match(es) for "${keyword}":\n`)
+    for (const h of hits) {
+      console.log(`  L${h.line}: ${h.text}`)
+    }
+  } else {
     console.log(`No matches for "${keyword}".`)
-    return 0
   }
-  console.log(`${hits.length} match(es) for "${keyword}":\n`)
-  for (const h of hits) {
-    console.log(`  L${h.line}: ${h.text}`)
+  // Semantic augment (best-effort; skips silently when not configured).
+  const cfg = resolveSearchConfig()
+  if (cfg) {
+    const semantic = await semanticSearch(dshHome(), keyword, cfg)
+    if (semantic && semantic.length > 0) {
+      const kwText = new Set(hits.map((h) => h.text))
+      const memoExtra = semantic.filter((h) => h.kind === 'memo' && !kwText.has(h.text))
+      const topicHits = semantic.filter((h) => h.kind === 'topic')
+      if (memoExtra.length + topicHits.length > 0) {
+        console.log(`\nSemantic matches (${memoExtra.length + topicHits.length}):`)
+        for (const m of memoExtra) console.log(`  [semantic] ${m.text}`)
+        for (const t of topicHits) console.log(`  [topic ${t.name}.md] ${t.text.length > 140 ? `${t.text.slice(0, 140)}…` : t.text}`)
+      }
+    }
   }
   return 0
+}
+
+async function cmdMemoryReindex(): Promise<number> {
+  const cfg = resolveSearchConfig()
+  if (!cfg) {
+    console.error('Error: semantic search not configured. Set DSH_MIND_EMBED_KEY, DSH_MIND_VECTOR_URL and DSH_MIND_VECTOR_KEY.')
+    return 1
+  }
+  console.log('Reindexing vector store…')
+  try {
+    await reindex(dshHome(), cfg)
+    console.log('Reindex complete.')
+    return 0
+  } catch (err) {
+    console.error(`Error: reindex failed: ${(err as Error).message}`)
+    return 1
+  }
 }
 
 function cmdMemoryList(): number {
@@ -502,8 +535,9 @@ Curator commands:
 
 Memory commands:
   memory add <text>         Add a memory entry
-  memory search <keyword>   Search memory entries
+  memory search <keyword>   Search memory entries (keyword + semantic when configured)
   memory list               List all memory entries
+  memory reindex            Rebuild the semantic vector index
 
 Preset commands:
   install-preset [name]     Install a bundled agent preset to ~/.dsh/.agent-presets/
@@ -517,7 +551,7 @@ Exit codes: 0=success, 1=failure, 2=parameter error
 `)
 }
 
-function main(): number {
+async function main(): Promise<number> {
   const args = process.argv.slice(2)
 
   if (args.length === 0 || args[0] === '-h' || args[0] === '--help' || args[0] === 'help') {
@@ -612,8 +646,11 @@ function main(): number {
       if (sub === 'list') {
         return cmdMemoryList()
       }
+      if (sub === 'reindex') {
+        return cmdMemoryReindex()
+      }
       console.error('Error: unknown memory subcommand.')
-      console.error('Usage: dsh-mind memory <add|search|list> ...')
+      console.error('Usage: dsh-mind memory <add|search|list|reindex> ...')
       return 2
     }
     case 'install-preset':
@@ -634,5 +671,10 @@ function main(): number {
   }
 }
 
-const exitCode = main()
-process.exit(exitCode)
+main().then(
+  (exitCode) => process.exit(exitCode),
+  (err) => {
+    console.error(err instanceof Error ? err.message : err)
+    process.exit(1)
+  },
+)

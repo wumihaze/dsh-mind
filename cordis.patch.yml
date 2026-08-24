@@ -64,6 +64,15 @@
 
     - id: tool-memory
       name: '@wumihaze/dsh-mind/tool/memory'
+      # Semantic search is OFF by default. Enable by setting env vars
+      #   DSH_MIND_EMBED_KEY, DSH_MIND_VECTOR_URL, DSH_MIND_VECTOR_KEY
+      # (auto-enables), or add a `search:` config block here:
+      #   config:
+      #     search:
+      #       enabled: true
+      #       embedApiKey: sk-...      # or rely on DSH_MIND_* env vars
+      #       vectorApiKey: ...        # Qdrant cloud API key
+      #       vectorUrl: https://<cluster>.qdrant.io
 
     - id: tool-skill-manage
       name: '@wumihaze/dsh-mind/tool/skill-manage'

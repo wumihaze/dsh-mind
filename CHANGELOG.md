@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.32] - 2026-08-25
+
+### Added
+
+- **Semantic search for memory (便签语义检索, roadmap item)**: `memory search` is
+  now augmented by embedding-based retrieval over sticky notes and topic files.
+  Text is embedded via SiliconFlow (free tier, `BAAI/bge-m3`) and vectors live in
+  a free Qdrant Cloud cluster — full-cloud, zero local infra. Keyword search stays
+  primary; semantic adds matches and falls back silently when the cloud is
+  unreachable, so offline/agent flows never break.
+  - New subpath `@wumihaze/dsh-mind/search`: `embedTexts` (SiliconFlow client), a
+    minimal Qdrant REST client (`ensureCollection` / `upsertPoints` /
+    `searchPoints` / `deletePoints` / `deleteAllPoints` / `pointCount`), and the
+    coordinator `syncIfStale` (content-fingerprint delta sync — works across every
+    write path: agent tool / GUI / CLI / memory-auto — no per-writer hooks needed),
+    plus `reindex`, `semanticSearch`, `resolveSearchConfig`, `hashOf`, `chunkText`,
+    `loadDocs`.
+  - **Privacy**: only vectors + a content-hash id leave the machine; note text is
+    looked up back locally after a query.
+  - **Free-tier safe**: the 1M-vector / 1-collection hard wall is preflighted via
+    `pointCount` before writing; a stale local manifest is what drives delta sync.
+  - `memory` tool search merges keyword + semantic hits (semantic-only entries
+    flagged `semantic`, topic chunks get a `snippet`). **Off by default** — enable
+    by setting `DSH_MIND_EMBED_KEY`, `DSH_MIND_VECTOR_URL`, `DSH_MIND_VECTOR_KEY`
+    (auto-enables) or via a `search:` config block on the `tool-memory` row.
+  - Web GUI: `GET /dsh-mind/memory/search?q=` returns semantic hits.
+  - CLI: `dsh-mind memory search` augments with semantic; new `dsh-mind memory
+    reindex` rebuilds the vector index.
+
 ## [0.1.31] - 2026-08-25
 
 ### Added
