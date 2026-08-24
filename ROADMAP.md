@@ -27,10 +27,12 @@
 
 ## Phase 3：Preset / Profile 配置
 
-- [ ] 3.1 随包附带 preset：`presets/mind-active/agent.cordis.yml`（全开）
-- [ ] 3.2 轻量 preset：`presets/mind-light/agent.cordis.yml`（只开记忆，不开自动治理）
-- [ ] 3.3 README 说明："想一键开启：`dsh plugin --profile xxx add @wumihaze/dsh-mind`"
-- [ ] 3.4 配置参考文档：所有可调参数 + 默认值 + 示例
+- [x] 3.1 随包附带 preset：`presets/mind-active/agent.cordis.yml`（全开）+ `preset.yml`
+- [x] 3.2 轻量 preset：`presets/mind-light/agent.cordis.yml`（只开记忆，不开自动治理）+ `preset.yml`
+- [x] 3.3 README 说明：安装 → `dsh-mind install-preset <name>` → 选择 preset 启动
+- [x] 3.4 配置参考文档：所有可调参数 + 默认值 + 示例（见 README 配置参考节）
+- [x] 3.5 CLI 扩展：`dsh-mind install-preset [name]` / `dsh-mind uninstall-preset <name>`
+- [x] 3.6 `cordis.patch.yml` 重构：仅保留 host 层服务（skill-usage + curator-core）
 
 ## Phase 4：Web GUI 面板
 

@@ -8,9 +8,10 @@
  * Usage: dsh-mind <command> [options]
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, renameSync, rmSync, statSync, cpSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // ─── DSH home resolution ────────────────────────────────────────────────────────
 
@@ -398,6 +399,84 @@ function cmdMemoryList(): number {
 
 // ─── Argument parsing (no external deps) ────────────────────────────────────────
 
+// ─── Preset management ──────────────────────────────────────────────────────────
+
+/** Resolve the package root (the directory containing package.json). */
+function packageRoot(): string {
+  // bin.js is at <pkg>/lib/cli/bin.js → package root is ../../
+  const here = dirname(fileURLToPath(import.meta.url))
+  return join(here, '..', '..')
+}
+
+/** List bundled presets available in this package. */
+function bundledPresets(): string[] {
+  const dir = join(packageRoot(), 'presets')
+  if (!existsSync(dir)) return []
+  return readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+}
+
+function cmdInstallPreset(name?: string): number {
+  const presets = bundledPresets()
+  if (presets.length === 0) {
+    console.error('Error: no bundled presets found in this package.')
+    return 1
+  }
+
+  if (!name) {
+    console.log(`Available presets: ${presets.join(', ')}`)
+    console.error('Usage: dsh-mind install-preset <name>')
+    return 2
+  }
+
+  if (!presets.includes(name)) {
+    console.error(`Error: unknown preset "${name}". Available: ${presets.join(', ')}`)
+    return 2
+  }
+
+  const src = join(packageRoot(), 'presets', name)
+  const dst = join(dshHome(), '.agent-presets', name)
+
+  try {
+    // Create target directory
+    const dstParent = join(dshHome(), '.agent-presets')
+    if (!existsSync(dstParent)) mkdirSync(dstParent, { recursive: true })
+    // Remove existing preset if present
+    if (existsSync(dst)) rmSync(dst, { recursive: true, force: true })
+    // Copy
+    cpSync(src, dst, { recursive: true })
+  } catch (err) {
+    console.error(`Error: failed to install preset: ${(err as Error).message}`)
+    return 1
+  }
+
+  console.log(`✓ Preset "${name}" installed to ${dst}`)
+  console.log('  Select it when starting a DSH session to activate dsh-mind capabilities.')
+  return 0
+}
+
+function cmdUninstallPreset(name?: string): number {
+  if (!name) {
+    console.error('Usage: dsh-mind uninstall-preset <name>')
+    return 2
+  }
+
+  const dst = join(dshHome(), '.agent-presets', name)
+  if (!existsSync(dst)) {
+    console.error(`Error: preset "${name}" not found at ${dst}`)
+    return 1
+  }
+
+  try {
+    rmSync(dst, { recursive: true, force: true })
+  } catch (err) {
+    console.error(`Error: failed to uninstall preset: ${(err as Error).message}`)
+    return 1
+  }
+
+  console.log(`✓ Preset "${name}" removed from ${dst}`)
+  return 0
+}
+
 function printHelp(): void {
   console.log(`dsh-mind — manage memory and skill curation
 
@@ -419,6 +498,10 @@ Memory commands:
   memory add <text>         Add a memory entry
   memory search <keyword>   Search memory entries
   memory list               List all memory entries
+
+Preset commands:
+  install-preset [name]     Install a bundled agent preset to ~/.dsh/.agent-presets/
+  uninstall-preset <name>   Remove an installed dsh-mind preset
 
 Options:
   -h, --help                Show this help
@@ -526,6 +609,17 @@ function main(): number {
       console.error('Error: unknown memory subcommand.')
       console.error('Usage: dsh-mind memory <add|search|list> ...')
       return 2
+    }
+    case 'install-preset':
+      return cmdInstallPreset(args[1])
+    case 'uninstall-preset': {
+      const name = args[1]
+      if (!name) {
+        console.error('Error: "uninstall-preset" requires a preset name.')
+        console.error('Usage: dsh-mind uninstall-preset <name>')
+        return 2
+      }
+      return cmdUninstallPreset(name)
     }
     default:
       console.error(`Error: unknown command "${cmd}".`)

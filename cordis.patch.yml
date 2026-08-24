@@ -1,27 +1,19 @@
-# dsh-mind bundle patch: memory + skill curation layer.
-# Applied after dsh-base (always first) and before the user's profile patch.
+# dsh-mind bundle patch — HOST-PLANE services only.
+# Applied after dsh-base and before the user's profile patch.
+#
+# Agent-plane plugins (memory-nudge, memory-guidance, tool-skill-manage)
+# are provided by the shipped presets (presets/mind-active/ and presets/mind-light/).
 #
 # All plugin names reference sub-exports of @wumihaze/dsh-mind,
 # resolved via the package's `exports` field.
 
 - insert:
-    # ── Memory extensions ──────────────────────────────────────────────
-
-    - id: memory-nudge
-      name: '@wumihaze/dsh-mind/memory/nudge'
-      config:
-        intervalTurns: 8
-
-    - id: memory-guidance
-      name: '@wumihaze/dsh-mind/memory/guidance'
-
-    # ── Skill lifecycle ────────────────────────────────────────────────
+    # ── Skill usage tracking (host service) ───────────────────────────
 
     - id: skill-usage
       name: '@wumihaze/dsh-mind/skill-usage'
 
-    - id: tool-skill-manage
-      name: '@wumihaze/dsh-mind/tool/skill-manage'
+    # ── Curator core (host service) ───────────────────────────────────
 
     - id: curator-core
       name: '@wumihaze/dsh-mind/curator'
