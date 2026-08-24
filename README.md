@@ -101,7 +101,7 @@ moment you install the bundle — no preset step needed:
 
 - `memory` tool (sticky notes + experience-library search)
 - `skill_manage` tool
-- `memory-nudge` (review reminders) and `memory-guidance` (usage guidance)
+- `memory-nudge` (review reminders), `memory-guidance` (usage guidance), and `memory-auto` (automatic fact extraction after a session idles)
 - skill-usage telemetry, curator-core governance, and the Web GUI panel
 
 The older `mind-active` / `mind-light` presets are kept only for backward

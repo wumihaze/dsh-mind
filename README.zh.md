@@ -10,7 +10,7 @@
 
 | 能力 | 说明 |
 |---|---|
-| **便签** | agent 用 `memory` 工具读写的快捷备忘（`MEMORY.md`，2200 字符预算），GUI/CLI 也能管 |
+| **便签** | agent 的快捷备忘（`MEMORY.md`，2200 字符预算），`memory` 工具 / GUI / CLI / **自动提取** 都能写 |
 | **经验库** | 你按主题整理的 Markdown 文件（`comfyui.md`、`dsh.md`…）自动出现在 GUI，agent 可搜索 |
 | **技能使用追踪** | 记录技能何时被使用、用了多少次 |
 | **技能治理** | 自动归档过期技能（30 天→stale，90 天→archived），带快照与回滚 |
@@ -94,7 +94,7 @@ dsh plugin --profile web add ./dsh-mind
 
 - `memory` 工具（便签 + 经验库检索）
 - `skill_manage` 工具
-- `memory-nudge`（记忆提醒）和 `memory-guidance`（使用引导）
+- `memory-nudge`（记忆提醒）、`memory-guidance`（使用引导）、`memory-auto`（会话空闲后自动提取事实）
 - skill-usage 遥测、curator-core 治理、Web GUI 面板
 
 旧的 `mind-active` / `mind-light` 预设仅作兼容保留，不再提供额外功能。
