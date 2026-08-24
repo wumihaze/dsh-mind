@@ -17,24 +17,17 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 | **Web GUI** | Memory panel, skill dashboard, curator console (DSH Web plugin) |
 | **Presets** | One-command agent preset installation (full or lightweight) |
 
-## Quick Start (3 steps)
+## Quick Start
 
 ```bash
-# 1. Install
 dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
-
-# 2. Enable agent capabilities
-dsh-mind install-preset mind-active
-
-# 3. Use
-dsh --profile <your-profile>          # start a session; agent now has memory + skill tools
 ```
 
-That's it. The agent will:
-- Remember things you tell it (`memory add`)
-- Suggest reviewing memory every 8 turns
-- Auto-archive skills unused for 90 days
-- Track skill usage for the dashboard
+装完即生效，三个能力立即可用：
+
+1. **跨会话记忆** — `dsh-mind memory add "内容"` / `dsh-mind memory search "关键词"`
+2. **技能治理** — `dsh-mind status` / `dsh-mind archive <name>` / `dsh-mind restore <name>`
+3. **Web GUI** — DSH Web 中打开 Mind 面板（记忆管理、技能仪表盘、治理控制台）
 
 ## Installation
 

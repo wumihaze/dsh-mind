@@ -17,24 +17,17 @@
 | **Web GUI** | 记忆面板、技能仪表盘、治理控制台（DSH Web 插件） |
 | **Preset** | 一键安装 agent preset（全开或轻量） |
 
-## 快速开始（3 步）
+## 快速开始
 
 ```bash
-# 1. 安装
 dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
-
-# 2. 启用 agent 能力
-dsh-mind install-preset mind-active
-
-# 3. 使用
-dsh --profile <your-profile>          # 启动会话，agent 即拥有记忆 + 技能管理
 ```
 
-就这三步。Agent 将会：
-- 记住你告诉它的事情（`memory add`）
-- 每 8 轮对话提醒审查记忆
-- 自动归档 90 天未使用的技能
-- 追踪技能使用（仪表盘可视化）
+装完即生效，三个能力立即可用：
+
+1. **跨会话记忆** — `dsh-mind memory add "内容"` / `dsh-mind memory search "关键词"`
+2. **技能治理** — `dsh-mind status` / `dsh-mind archive <name>` / `dsh-mind restore <name>`
+3. **Web GUI** — DSH Web 中打开 Mind 面板（记忆管理、技能仪表盘、治理控制台）
 
 ## 安装
 
