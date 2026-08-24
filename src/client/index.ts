@@ -39,11 +39,14 @@ export function apply(ctx: ClientContext): void {
   // Register i18n dictionaries
   ctx.locale.register(NS, { zh, en })
 
-  // Register the settings section
+  // Register the settings section. `name` is the slot this registers into
+  // (the parent "settings.section"); `id` is this plugin's unique slot id.
+  // dshmarket uses the same shape — a wrong `name` makes the slot system reject
+  // it with "slot \"dsh-mind\" is not declared".
   ctx.slots.inject('settings.section', () => {
     ctx.slots.register(
       {
-        name: 'dsh-mind',
+        name: 'settings.section',
         id: 'dsh-mind',
         order: 50,
         label: 'Mind',

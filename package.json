@@ -1,7 +1,7 @@
 {
   "name": "@wumihaze/dsh-mind",
   "description": "Give your DSH agent a mind: persistent memory + self-curating skills",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",

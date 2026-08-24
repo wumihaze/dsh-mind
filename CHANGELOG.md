@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-08-25
+
+### Fixed
+
+- **Web panel slot rejected after 0.1.8**: once the client factory returned
+  `module.exports`, the panel's `apply` ran and hit
+  `slot "dsh-mind" is not declared`. The `slots.register` call used
+  `name: "dsh-mind"` (its own id) as the slot name; `name` must be the parent
+  slot the entry registers into — `settings.section` — matching the `dshmarket`
+  client shape (`name: "settings.section", id: "market"`). Fixed the slot name.
+
 ## [0.1.8] - 2026-08-25
 
 ### Fixed
