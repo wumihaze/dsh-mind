@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20] - 2026-08-25
+
+### Changed
+
+- **Rename the topic section to 经验库** (Experience library): the per-topic
+  files are detailed experience docs, so the label no longer reads as "all
+  memory". 全局记忆 (quick entries) and 经验库 (topic files) are now distinct.
+
 ## [0.1.19] - 2026-08-25
 
 ### Changed
