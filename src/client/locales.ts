@@ -48,6 +48,10 @@ export const zh: Record<string, string> = {
   'memory.topic_deleted': '主题已删除',
   'memory.topic_created': '主题已创建',
   'memory.topic_delete_confirm': '确定要删除主题「{name}」吗？',
+  'memory.pin': '钉住（常驻注入提示词）',
+  'memory.unpin': '取消钉住',
+  'memory.pin_success': '已钉住，将注入提示词',
+  'memory.unpin_success': '已取消钉住',
 
   // ── Skills ──
   'skills.title': '技能仪表盘',
@@ -139,6 +143,10 @@ export const en: Record<string, string> = {
   'memory.topic_deleted': 'Topic deleted',
   'memory.topic_created': 'Topic created',
   'memory.topic_delete_confirm': 'Delete topic "{name}"?',
+  'memory.pin': 'Pin (always inject into prompt)',
+  'memory.unpin': 'Unpin',
+  'memory.pin_success': 'Pinned — will inject into the prompt',
+  'memory.unpin_success': 'Unpinned',
 
   // ── Skills ──
   'skills.title': 'Skill Dashboard',

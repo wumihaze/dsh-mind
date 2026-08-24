@@ -18,6 +18,7 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { readFile, writeFile, mkdir, readdir, rm } from 'node:fs/promises'
+import { readPins, togglePin } from './memory/pins.ts'
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -179,14 +180,16 @@ export function mountMindRoutes(host: MindHost): () => void {
           entries.push(text)
           await writeMemory(entries)
           const topics = await listMemoryTopics()
-          json(res, { entries, topics, totalChars: total, budget: 2200 }, 201)
+          const pinned = readPins(DSH_HOME, entries)
+          json(res, { entries, topics, pinned, totalChars: total, budget: 2200 }, 201)
           return
         }
         if (req.method !== 'GET') return err(res, 'method not allowed', 405)
         const entries = await readMemory()
         const topics = await listMemoryTopics()
+        const pinned = readPins(DSH_HOME, entries)
         const totalChars = entries.join('\n').length
-        json(res, { entries, topics, totalChars, budget: 2200 })
+        json(res, { entries, topics, pinned, totalChars, budget: 2200 })
       },
     }),
   )
@@ -202,8 +205,21 @@ export function mountMindRoutes(host: MindHost): () => void {
       handler: async (req: IncomingMessage, res: ServerResponse) => {
         const url = new URL(req.url ?? '', 'http://localhost')
         const parts = url.pathname.split('/')
-        const idxStr = parts[parts.length - 1]
-        const idx = Number(idxStr)
+        const last = parts[parts.length - 1]
+        const idx = Number(last)
+
+        // POST /dsh-mind/memory/<idx>/pin — toggle 常驻 (always-inject) flag
+        if (req.method === 'POST' && last !== 'pin') {
+          if (!Number.isInteger(idx) || idx < 0) return err(res, 'invalid index')
+          const entries = await readMemory()
+          if (idx >= entries.length) return err(res, 'index out of range', 404)
+          const pinned = togglePin(DSH_HOME, entries, idx).pinned
+          const topics = await listMemoryTopics()
+          json(res, { entries, topics, pinned, totalChars: entries.join('\n').length, budget: 2200 })
+          return
+        }
+        if (req.method === 'POST' && last === 'pin') return err(res, 'invalid index')
+
         if (!Number.isInteger(idx) || idx < 0) return err(res, 'invalid index')
 
         if (req.method === 'DELETE') {
@@ -212,7 +228,8 @@ export function mountMindRoutes(host: MindHost): () => void {
           entries.splice(idx, 1)
           await writeMemory(entries)
           const topics = await listMemoryTopics()
-          json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 })
+          const pinned = readPins(DSH_HOME, entries)
+          json(res, { entries, topics, pinned, totalChars: entries.join('\n').length, budget: 2200 })
           return
         }
 
@@ -225,7 +242,8 @@ export function mountMindRoutes(host: MindHost): () => void {
           entries[idx] = text
           await writeMemory(entries)
           const topics = await listMemoryTopics()
-          json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 })
+          const pinned = readPins(DSH_HOME, entries)
+          json(res, { entries, topics, pinned, totalChars: entries.join('\n').length, budget: 2200 })
           return
         }
 

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.28] - 2026-08-25
+
+### Added
+
+- **Pinned (常驻) sticky notes + prompt injection** (`memory-inject`, host-plane,
+  enabled by default): pin a sticky note in the panel (📌) and it is injected
+  into the prompt every turn — key facts are always present without a tool call.
+  Nothing pinned → nothing injected → zero overhead. Pins live in
+  `~/.dsh/memory/pinned.json`; pinned state is also exposed by the `memory` tool
+  (`list`/`search`) and pruned when an entry is edited/removed.
+- Pin toggle route: `POST /dsh-mind/memory/<idx>/pin`.
+
 ## [0.1.27] - 2026-08-25
 
 ### Changed

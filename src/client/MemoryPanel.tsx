@@ -13,6 +13,7 @@ interface MemoryTopic {
 interface MemoryData {
   entries: string[]
   topics: MemoryTopic[]
+  pinned: string[]
   totalChars: number
   budget: number
 }
@@ -106,6 +107,19 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
       const d = await res.json()
       setData(d)
       setMsg(t('memory.remove_success'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const togglePin = async (idx: number, text: string) => {
+    const isPinned = data?.pinned?.includes(text) ?? false
+    try {
+      const res = await fetch(`/dsh-mind/memory/${idx}/pin`, { method: 'POST' })
+      if (!res.ok) throw new Error(await apiError(res))
+      const d = await res.json()
+      setData(d)
+      setMsg(isPinned ? t('memory.unpin_success') : t('memory.pin_success'))
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
@@ -290,7 +304,16 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
                   </div>
                 ) : (
                   <>
-                    <span className={styles.listLabel}>{entry}</span>
+                    <span className={styles.listLabel}>
+                      {data.pinned?.includes(entry) ? '📌 ' : ''}{entry}
+                    </span>
+                    <button
+                      className={styles.btnSmall}
+                      onClick={() => void togglePin(i, entry)}
+                      title={t(data.pinned?.includes(entry) ? 'memory.unpin' : 'memory.pin')}
+                    >
+                      {data.pinned?.includes(entry) ? '📌' : '📍'}
+                    </button>
                     <button
                       className={styles.btnSmall}
                       onClick={() => startEdit(i, entry)}

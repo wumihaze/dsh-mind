@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { dshHomePath } from '@deepseek-ai/dsh-home-paths'
+import { prunePins, readPins } from '../memory/pins.ts'
 
 /** Plugin name for the Loader manifest. */
 export const name = 'dsh-tool-memory'
@@ -127,6 +128,7 @@ export function apply(ctx: Context, config: Config = {}): void {
               properties: {
                 index: { type: 'integer' },
                 text: { type: 'string' },
+                pinned: { type: 'boolean' },
               },
             },
           },
@@ -151,13 +153,14 @@ export function apply(ctx: Context, config: Config = {}): void {
 
       if (action === 'list') {
         const topics = readTopics(root).map((tp) => ({ name: tp.name, title: tp.title }))
+        const pinned = new Set(readPins(root, entries))
         return {
           action,
           status: 'ok',
           count: entries.length,
           totalChars: entries.join('\n').length,
           budget,
-          entries: entries.map((text, index) => ({ index, text })),
+          entries: entries.map((text, index) => ({ index, text, pinned: pinned.has(text) })),
           topics,
         }
       }
@@ -165,8 +168,9 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (action === 'search') {
         const q = (args.query as string | undefined)?.toLowerCase() ?? ''
         if (!q) throw new Error('"query" is required for the "search" action')
+        const pinned = new Set(readPins(root, entries))
         const hits = entries
-          .map((text, index) => ({ index, text }))
+          .map((text, index) => ({ index, text, pinned: pinned.has(text) }))
           .filter((h) => h.text.toLowerCase().includes(q))
         // Also search the per-topic memory files (dsh.md, comfyui.md, …).
         const topicHits = readTopics(root)
@@ -196,6 +200,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         if (!text) throw new Error('"text" is required for the "replace" action')
         entries[idx] = text
         writeEntries(path, entries)
+        prunePins(root, entries)
         return { action, status: 'replaced', index: idx, message: 'Memory entry replaced.', totalChars: entries.join('\n').length }
       }
 
@@ -206,6 +211,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         }
         entries.splice(idx, 1)
         writeEntries(path, entries)
+        prunePins(root, entries)
         return { action, status: 'removed', index: idx, message: 'Memory entry removed.', count: entries.length }
       }
 

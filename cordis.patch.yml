@@ -57,6 +57,11 @@
         intervalTurns: 10
         debounceMs: 90000
 
+    - id: memory-inject
+      name: '@wumihaze/dsh-mind/memory/inject'
+      config:
+        maxChars: 600
+
     - id: tool-memory
       name: '@wumihaze/dsh-mind/tool/memory'
 
