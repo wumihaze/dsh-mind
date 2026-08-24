@@ -36,21 +36,24 @@ interface ClientContext {
  * @param ctx - Client context provided by the DSH web app.
  */
 export function apply(ctx: ClientContext): void {
-  // Register i18n dictionaries
+  // Register i18n dictionaries, then bind the per-locale translator.
   ctx.locale.register(NS, { zh, en })
+  const t = ctx.locale.bind(NS)
 
   // Register the settings section. `name` is the slot this registers into
   // (the parent "settings.section"); `id` is this plugin's unique slot id.
-  // dshmarket uses the same shape — a wrong `name` makes the slot system reject
-  // it with "slot \"dsh-mind\" is not declared".
+  // The `label` is a function (dynamic), `locale` is the namespace, and
+  // `inject` hands `t` to the panel — all matching the `dshmarket` client so
+  // the UI follows the app's language instead of staying English.
   ctx.slots.inject('settings.section', () => {
     ctx.slots.register(
       {
         name: 'settings.section',
         id: 'dsh-mind',
         order: 50,
-        label: 'Mind',
-        locale: { zh: '心智', en: 'Mind' },
+        label: () => t('section.nav'),
+        locale: NS,
+        inject: () => ({ t }),
       },
       MindSection,
     )

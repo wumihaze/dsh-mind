@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-08-25
+
+### Fixed
+
+- **Web panel stayed in English / showed raw keys instead of following the app
+  language**: the settings-section registration did not bind the locale
+  translator or hand it to the component. `label` was a static `'Mind'` string,
+  `locale` was an inline dict, and — critically — there was no
+  `inject: () => ({ t })`, so the panel's `t` prop fell back to identity and
+  rendered keys instead of translations. The panel now binds `ctx.locale.bind(NS)`,
+  uses a dynamic `label: () => t('section.nav')`, passes `locale: NS`, and
+  injects `t` into `MindSection` — the same shape the `dshmarket` client uses —
+  so zh/en follow the app.
+
 ## [0.1.9] - 2026-08-25
 
 ### Fixed

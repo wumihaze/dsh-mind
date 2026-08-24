@@ -6,6 +6,7 @@ export const zh: Record<string, string> = {
   // ── Section ──
   'section.title': '心智管理',
   'section.desc': '管理代理的持久记忆、技能使用和自动治理。',
+  'section.nav': '心智',
 
   // ── Tabs ──
   'tab.memory': '记忆',
@@ -82,6 +83,7 @@ export const en: Record<string, string> = {
   // ── Section ──
   'section.title': 'Mind Management',
   'section.desc': 'Manage your agent\'s persistent memory, skill usage, and auto-curation.',
+  'section.nav': 'Mind',
 
   // ── Tabs ──
   'tab.memory': 'Memory',
