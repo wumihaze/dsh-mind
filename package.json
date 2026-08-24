@@ -55,6 +55,7 @@
     "build": "tsc -p tsconfig.json && tsdown",
     "build:host": "tsc -p tsconfig.json",
     "build:client": "tsdown",
+    "test": "node tests/integration.mjs",
     "clean": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true}); try{require('fs').rmSync('client',{recursive:true,force:true})}catch{}\"",
     "prepublishOnly": "pnpm run build"
   },
