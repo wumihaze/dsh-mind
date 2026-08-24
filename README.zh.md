@@ -232,6 +232,9 @@ Letta 是带服务端记忆的完整 agent 框架。dsh-mind 是轻量 DSH bundl
 **归档的技能会怎样？**
 移到 `~/.dsh/skills/_archived/<name>/`，不再加载进技能列表，随时 `dsh-mind restore <name>` 恢复。
 
+**为什么不自动提取记忆 / 直接注入提示词？**
+dsh-mind 的记忆是**工具式 + agent 主动**的：agent 用 `memory` 工具读写便签，`memory-nudge` 在有事发生后提醒它复习。这是刻意选择——保持上下文精简（2200 预算）、不加额外 LLM 调用、不膨胀提示词。部分 DSH 记忆插件会**对话后自动提取**事实，或**每轮直接注入记忆**进提示词（无需调工具即可回忆）。那更自动，但更费 token 和上下文。dsh-mind 走轻量、省预算的路子。
+
 **Web GUI 会跟随语言吗？**
 会，面板中/英双语，跟随 DSH app 语言。
 

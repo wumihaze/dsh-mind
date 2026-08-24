@@ -247,6 +247,15 @@ The sticky-notes file has a 2200-character budget. The agent is nudged to review
 **What happens to archived skills?**
 Archived skills move to `~/.dsh/skills/_archived/<name>/`. They're no longer loaded into the agent's skill list, but you can restore them anytime with `dsh-mind restore <name>`.
 
+**Why doesn't it auto-extract memory or inject memories into the prompt?**
+dsh-mind's memory is **tool-based and agent-initiated**: the agent reads/writes its
+sticky notes with the `memory` tool, and `memory-nudge` reminds it to review after
+a noteworthy event. This is deliberate — it keeps the context budget small (2200
+chars) and adds no extra LLM calls or prompt bloat. Some DSH memory plugins
+instead auto-extract facts after each conversation or inject memories directly
+into the prompt every turn (always-available recall). That is more automatic but
+costs tokens and context. dsh-mind favors the lightweight, budget-conscious path.
+
 **Does the Web GUI follow my language?**
 Yes — the panel is zh/en and follows the DSH app language.
 
