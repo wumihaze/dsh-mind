@@ -85,11 +85,13 @@ dsh plugin --profile web add ./dsh-mind
 
 旧的 `mind-active` / `mind-light` 预设仅作兼容保留，不再提供额外功能。
 
+> **从 ≤ 0.1.21 升级**：如果你之前装过 `mind-active` / `mind-light`（或把 agent 行合并进自定义预设），现在请把预设里的这些行清掉——能力已是 host 层，保留会重复注册导致 nudge 提醒翻倍。
+>
 > 想对特定 agent 关闭 dsh-mind，在 profile 的 `cordis.patch.yml` 里禁用对应行（如给 `memory-nudge` 或 `tool-memory` 加 `disabled: true`）。
 
 ## Agent 工具
 
-装了预设后，agent 有两个工具：
+每个 agent 默认都有这两个工具：
 
 | 工具 | 动作 | 后端存储 |
 |---|---|---|

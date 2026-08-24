@@ -17,6 +17,17 @@ interface MemoryData {
   budget: number
 }
 
+/** Read the server's `{ error }` body, falling back to the HTTP status. */
+async function apiError(res: Response): Promise<string> {
+  try {
+    const body = await res.json()
+    if (body && typeof body.error === 'string' && body.error) return body.error
+  } catch {
+    /* non-JSON body */
+  }
+  return `HTTP ${res.status}`
+}
+
 interface TopicEditorState {
   name: string
   title: string
@@ -47,7 +58,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
   const load = useCallback(async () => {
     try {
       const res = await fetch('/dsh-mind/memory')
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       setData(await res.json())
       setError(null)
     } catch (e) {
@@ -78,7 +89,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       const d = await res.json()
       setData(d)
       setNewEntry('')
@@ -91,7 +102,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
   const remove = async (idx: number) => {
     try {
       const res = await fetch(`/dsh-mind/memory/${idx}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       const d = await res.json()
       setData(d)
       setMsg(t('memory.remove_success'))
@@ -108,7 +119,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
   const openTopicEditor = async (name: string) => {
     try {
       const res = await fetch(`/dsh-mind/memory/topic/${name}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       const d = await res.json()
       setTopicEditor({ name, title: name, content: d.content ?? '' })
       setError(null)
@@ -125,7 +136,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: topicEditor.content }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       setTopicEditor(null)
       setMsg(t('memory.topic_saved'))
       void load()
@@ -138,7 +149,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
     if (!confirm(t('memory.topic_delete_confirm').replace('{name}', title))) return
     try {
       const res = await fetch(`/dsh-mind/memory/topic/${name}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       setMsg(t('memory.topic_deleted'))
       void load()
     } catch (e) {
@@ -156,7 +167,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, content }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       setCreatingTopic(false)
       setNewTopicName('')
       setNewTopicContent('')
@@ -176,7 +187,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(await apiError(res))
       const d = await res.json()
       setData(d)
       setEditingIdx(null)

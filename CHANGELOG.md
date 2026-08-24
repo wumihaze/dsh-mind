@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.23] - 2026-08-25
+
+### Fixed
+
+- **Budget enforcement everywhere**: the 2200-char global-memory budget was only
+  enforced by the agent `memory` tool — the Web GUI add and `dsh-mind memory add`
+  could exceed it. All three entry points now reject over-budget adds.
+- **Clear GUI errors**: the panel now surfaces the server's `{ error }` message
+  instead of a bare `HTTP 400`.
+- **README**: deduplicated the "enabled by default" section and added an
+  upgrade-from-≤0.1.21 migration note (remove preset rows to avoid a doubled nudge).
+
 ## [0.1.22] - 2026-08-25
 
 ### Changed

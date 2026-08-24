@@ -92,6 +92,11 @@ moment you install the bundle — no preset step needed:
 The older `mind-active` / `mind-light` presets are kept only for backward
 compatibility and add nothing extra.
 
+> **Upgrading from ≤ 0.1.21**: if you had previously installed `mind-active` /
+> `mind-light` (or merged the agent rows into a custom preset), remove those rows
+> from your preset now — the capabilities are already host-plane, so keeping them
+> would double-register the nudge. Empty the preset rows or delete the preset.
+>
 > To keep dsh-mind off specific presets, disable the rows in your profile's
 > `cordis.patch.yml` (e.g. set `disabled: true` on `memory-nudge` or `tool-memory`).
 

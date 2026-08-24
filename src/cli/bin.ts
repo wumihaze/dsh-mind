@@ -346,6 +346,12 @@ function cmdMemoryAdd(text: string): number {
   }
   const line = `- ${text}`
   const content = readFileSync(file, 'utf8')
+  const entries = content.split('\n').filter(l => l.trim().startsWith('- ')).map(l => l.slice(2))
+  const total = [...entries, text].join('\n').length
+  if (total > 2200) {
+    console.error(`Error: memory budget exceeded: ${total} > 2200 characters; replace or remove an entry first`)
+    return 1
+  }
   writeFileSync(file, content.trimEnd() + '\n' + line + '\n', 'utf8')
   console.log(`Added memory: ${text}`)
   return 0

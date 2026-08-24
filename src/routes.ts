@@ -171,10 +171,15 @@ export function mountMindRoutes(host: MindHost): () => void {
           const text = typeof body.text === 'string' ? body.text.trim() : ''
           if (!text) return err(res, 'text is required')
           const entries = await readMemory()
+          const next = [...entries, text]
+          const total = next.join('\n').length
+          if (total > 2200) {
+            return err(res, `memory budget exceeded: ${total} > 2200 characters; replace or remove an entry first`, 400)
+          }
           entries.push(text)
           await writeMemory(entries)
           const topics = await listMemoryTopics()
-          json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 }, 201)
+          json(res, { entries, topics, totalChars: total, budget: 2200 }, 201)
           return
         }
         if (req.method !== 'GET') return err(res, 'method not allowed', 405)
