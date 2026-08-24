@@ -77,9 +77,19 @@ export interface TopicHit {
 
 export type SemanticHit = MemoHit | TopicHit
 
-/** Stable 16-hex content hash used as vector point id. */
+/** Stable 16-hex content hash. */
 export function hashOf(text: string): string {
   return createHash('sha256').update(text, 'utf8').digest('hex').slice(0, 16)
+}
+
+/**
+ * Qdrant point ids must be unsigned integers or UUIDs — arbitrary strings are
+ * rejected. Derive a deterministic UUID from a logical id so delta sync and
+ * deletes can always address the same point.
+ */
+export function pointIdOf(id: string): string {
+  const hex = createHash('sha256').update(id).digest('hex')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
 }
 
 /** Read sticky-note entries out of MEMORY.md. */
@@ -195,14 +205,16 @@ export async function syncIfStale(root: string, cfg: ResolvedSearchConfig): Prom
     const vectors = await embedTexts(cfg, toAdd.map((d) => d.text))
     if (vectors.length !== toAdd.length) throw new Error('embedding count mismatch')
     const points: VectorPoint[] = toAdd.map((d, i) => ({
-      id: d.id,
+      id: pointIdOf(d.id),
       vector: vectors[i]!,
-      payload: d.kind === 'topic' ? { kind: 'topic', name: d.name, title: d.title } : { kind: 'memo' },
+      payload: d.kind === 'topic'
+        ? { kind: 'topic', name: d.name, title: d.title, hash: d.hash }
+        : { kind: 'memo', hash: d.hash },
     }))
     await upsertPoints(cfg, points)
   }
 
-  if (toRemove.length > 0) await deletePoints(cfg, toRemove)
+  if (toRemove.length > 0) await deletePoints(cfg, toRemove.map((id) => pointIdOf(id)))
 
   const next: Record<string, string> = {}
   for (const d of docs) next[d.id] = d.hash
@@ -218,22 +230,23 @@ export async function reindex(root: string, cfg: ResolvedSearchConfig): Promise<
   await syncIfStale(root, cfg)
 }
 
-/** Map vector hits back to local memo/topic text. */
-function mapHits(root: string, hits: Array<{ id: string; score: number }>, chunkSize: number): SemanticHit[] {
+/** Map vector hits back to local memo/topic text (via payload hash/kind). */
+function mapHits(root: string, hits: Array<{ id: string; score: number; payload: Record<string, unknown> | undefined }>, chunkSize: number): SemanticHit[] {
   const memos = readMemoEntries(root).map((text) => ({ text, hash: hashOf(text) }))
   const topicCache = new Map<string, Array<{ text: string; hash: string; title: string }>>()
   const out: SemanticHit[] = []
   for (const hit of hits) {
-    if (hit.id.startsWith('memo:')) {
-      const hash = hit.id.slice(5)
-      const idx = memos.findIndex((m) => m.hash === hash)
-      if (idx >= 0) out.push({ kind: 'memo', id: hit.id, index: idx, text: memos[idx]!.text, score: hit.score })
-    } else if (hit.id.startsWith('topic:')) {
-      const rest = hit.id.slice('topic:'.length)
-      const colon = rest.indexOf(':')
-      if (colon > 0) {
-        const name = rest.slice(0, colon)
-        const hash = rest.slice(colon + 1)
+    const kind = hit.payload?.kind
+    if (kind === 'memo') {
+      const hash = hit.payload?.hash
+      if (typeof hash === 'string') {
+        const idx = memos.findIndex((m) => m.hash === hash)
+        if (idx >= 0) out.push({ kind: 'memo', id: hit.id, index: idx, text: memos[idx]!.text, score: hit.score })
+      }
+    } else if (kind === 'topic') {
+      const name = hit.payload?.name
+      const hash = hit.payload?.hash
+      if (typeof name === 'string' && typeof hash === 'string') {
         let chunks = topicCache.get(name)
         if (chunks === undefined) {
           const raw = readTopicsRaw(root).find((t) => t.name === name)

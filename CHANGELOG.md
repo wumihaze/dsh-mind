@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.33] - 2026-08-25
+
+### Fixed
+
+- **Semantic search upserts failed on a real Qdrant cluster**: point ids were
+  sent as `memo:<hash>` / `topic:<name>:<hash>` strings, but Qdrant only accepts
+  unsigned integers or UUIDs as point ids → `400 Format error in JSON body`.
+  Logical ids now map to a deterministic UUID (`pointIdOf`), and the content hash
+  + kind are carried in the point payload so search results still map back to
+  local text. Verified live against a free Qdrant cluster (89 vectors indexed,
+  keyword → semantic hits working).
+
 ## [0.1.32] - 2026-08-25
 
 ### Added

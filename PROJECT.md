@@ -5,7 +5,7 @@
 
 - 仓库：`github.com/wumihaze/dsh-mind`（public）
 - npm：`@wumihaze/dsh-mind`（public，最新见 `CHANGELOG.md`）
-- 当前版本：0.1.32
+- 当前版本：0.1.33
 - 授权：MIT
 
 ---
@@ -195,6 +195,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | 0.1.30 | 文档同步 |
 | 0.1.31 | PROJECT.md 项目书 + 文档同步 |
 | 0.1.32 | **语义检索**（SiliconFlow bge-m3 embed + Qdrant 免费向量库，`memory search` 混合，默认关） |
+| 0.1.33 | 修复：Qdrant point ID 必须为 UUID（真实集群验证通过，89 向量可检索） |
 
 ## 12. 开发 / 发布流程
 

@@ -400,6 +400,7 @@ const {
   chunkText,
   loadDocs,
   hashOf,
+  pointIdOf,
 } = await import('../lib/search/index.js')
 
 function fakeVector(text) {
@@ -430,7 +431,7 @@ globalThis.fetch = async (url, init) => {
   }
   if (path.endsWith('/points/search')) {
     const limit = JSON.parse(init?.body ?? '{}').limit ?? 8
-    return new Response(JSON.stringify({ result: searchHits.slice(0, limit).map((h) => ({ id: h.id, score: h.score, payload: {} })) }))
+    return new Response(JSON.stringify({ result: searchHits.slice(0, limit).map((h) => ({ id: h.id, score: h.score, payload: h.payload ?? {} })) }))
   }
   if (path.endsWith('/points') && method === 'PUT') {
     // upsert URL is /points?wait=true — query is in u.search, not pathname
@@ -524,7 +525,7 @@ await testAsync('semanticSearch maps hit id back to local text', async () => {
   const docs = loadDocs(HOME, 500)
   const two = docs.find((d) => d.kind === 'memo' && d.text === 'note two')
   assert(two, 'note two doc present')
-  searchHits = [{ id: two.id, score: 0.91 }]
+  searchHits = [{ id: pointIdOf(two.id), score: 0.91, payload: { kind: 'memo', hash: two.hash } }]
   const hits = await semanticSearch(HOME, 'whatever query', resolveSearchConfig())
   assert(hits && hits.length === 1, `expected 1 hit, got ${hits?.length}`)
   assertEq(hits[0].kind, 'memo')
@@ -541,7 +542,7 @@ await testAsync('editing a note syncs only the delta', async () => {
   writeFileSync(join(HOME, 'memory', 'MEMORY.md'), '- note one\n- note changed\n', 'utf-8')
   const ok = await syncIfStale(HOME, resolveSearchConfig())
   assert(ok)
-  assert(deleted.includes(two.id), 'old note id deleted from vector store')
+  assert(deleted.includes(pointIdOf(two.id)), 'old note point deleted from vector store')
   assertEq(upserted.length, before + 1, 'exactly one new point upserted')
   assertEq(deleted.length, delBefore + 1)
 })

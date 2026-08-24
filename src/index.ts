@@ -28,7 +28,7 @@ export const apply = (): void => {}
 export { SkillUsageService } from './skill-usage/index.ts'
 export type { SkillProvenance, SkillUsageIndex, SkillUsageRecord } from './skill-usage/types.ts'
 export { CuratorCoreService } from './curator/index.ts'
-export { chunkText, hashOf, loadDocs, reindex, resolveSearchConfig, semanticSearch, syncIfStale } from './search/index.ts'
+export { chunkText, hashOf, loadDocs, pointIdOf, reindex, resolveSearchConfig, semanticSearch, syncIfStale } from './search/index.ts'
 export type { MemoDoc, MemoHit, ResolvedSearchConfig, SearchConfig, SemanticHit, TopicDoc, TopicHit } from './search/index.ts'
 export type {
   Config as CuratorConfig,
