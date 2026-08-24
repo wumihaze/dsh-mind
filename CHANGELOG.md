@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-08-25
+
+### Fixed
+
+- **Revert 0.1.6's client-registration change**: registering the Web client via
+  the `skill-usage` subpath entry made the manifest id `@wumihaze/dsh-mind/skill-usage`,
+  but the built client bundle registers itself as `@wumihaze/dsh-mind` — the
+  module loader rejected the bundle (`loaded without registering ... via
+  __ModuleLoader__.load`). The bare package-name anchor entry is restored so the
+  two ids match exactly. The 0.1.4/0.1.5 "invalid plugin ... received undefined"
+  failures only occurred while pnpm replaced package files under a running app
+  (an HMR import race), not in steady state; upgrade with the app stopped.
+
 ## [0.1.6] - 2026-08-25
 
 ### Fixed

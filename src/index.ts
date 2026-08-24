@@ -4,14 +4,26 @@
  * This is the bundle entry point — re-exports all sub-modules for
  * programmatic access. Plugin activation happens via `cordis.patch.yml`.
  *
- * The Web client bundle is registered through the `skill-usage` loader entry:
- * `dsh-client-modules` keys client registration on an entry name, resolves
- * `<entry>/package.json` (see the `./skill-usage/package.json` export) and reads
- * `dsh.client`. That is why this package exposes the subpath's package.json
- * rather than mounting the bare package name as a plugin.
+ * The package main is also a valid (no-op) Cordis plugin so the bundle patch can
+ * carry an entry whose name is the bare package name. `dsh-client-modules` keys
+ * Web client-bundle registration on exactly such an entry: it resolves
+ * `<entry-name>/package.json` and reads `dsh.client`, and the built client
+ * bundle registers itself under that same bare package name — the two ids must
+ * match. A subpath entry name (e.g. `@wumihaze/dsh-mind/skill-usage`) would
+ * register the client under a mismatched id and the module loader rejects it.
  *
  * @module @wumihaze/dsh-mind
  */
+
+/** Cordis plugin name for the package entry (the client-registration anchor). */
+export const name = 'dsh-mind'
+
+/**
+ * No-op host plugin. The real services mount through the subpath rows in
+ * `cordis.patch.yml`; this row exists solely so the Loader carries an entry
+ * named exactly `@wumihaze/dsh-mind`, which is what registers the Web client.
+ */
+export const apply = (): void => {}
 
 export { SkillUsageService } from './skill-usage/index.ts'
 export type { SkillProvenance, SkillUsageIndex, SkillUsageRecord } from './skill-usage/types.ts'
