@@ -74,24 +74,18 @@ dsh plugin --profile web add ./dsh-mind
 
 > **升级注意**：执行 `dsh plugin add` 前请**先停掉 DSH Web**，装完再启动——pnpm 会在 app 运行时替换包文件，可能和 app 内部的模块热重载竞态。停 → 装/升级 → 启。
 
-### 启用 Agent 能力（预设）
+### Agent 能力默认开启
 
-装完 bundle 后，host 层服务（skill-usage、curator）自动生效。要**给 agent** 记忆提醒、`memory`/`skill_manage` 工具和记忆审查 nudge，装一个预设：
+自 **0.1.22** 起，所有能力都注册在 **host 层**，装完 bundle 即对**每个 agent**生效，不需要装预设：
 
-```bash
-# 全开：记忆 + 技能管理工具
-dsh-mind install-preset mind-active
+- `memory` 工具（全局记忆 + 经验库检索）
+- `skill_manage` 工具
+- `memory-nudge`（记忆提醒）和 `memory-guidance`（使用引导）
+- skill-usage 遥测、curator-core 治理、Web GUI 面板
 
-# 轻量：记忆 + memory 工具（不含技能管理）
-dsh-mind install-preset mind-light
+旧的 `mind-active` / `mind-light` 预设仅作兼容保留，不再提供额外功能。
 
-# 移除预设
-dsh-mind uninstall-preset mind-active
-```
-
-> **原理**：bundle 的 `cordis.patch.yml` 注册 host 层服务（skill-usage、curator-core）和 Web 客户端；预设的 `agent.cordis.yml` 注册 agent 层（`memory-nudge`、`memory-guidance`、`tool-memory`、`tool-skill-manage`）。合起来才是完整能力。
->
-> 想加到你的**默认预设**（而不是切换预设），把这四个 agent 层行复制进你的预设（如 `~/.dsh/.agent-presets/cordis-tuned/agent.cordis.yml`）。
+> 想对特定 agent 关闭 dsh-mind，在 profile 的 `cordis.patch.yml` 里禁用对应行（如给 `memory-nudge` 或 `tool-memory` 加 `disabled: true`）。
 
 ## Agent 工具
 

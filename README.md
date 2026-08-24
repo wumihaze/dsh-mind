@@ -79,34 +79,25 @@ dsh plugin --profile web add ./dsh-mind
 > pnpm replaces package files while the app runs, which can race the in-app module
 > reload. Stop → install/upgrade → start.
 
-### Enabling Agent Capabilities (Preset)
+### Agent capabilities are enabled by default
 
-After bundle install, host-plane services (skill-usage, curator) are active automatically.
-To give the **agent** memory reminders, the `memory`/`skill_manage` tools and the
-memory-review nudge, install a preset:
+Since **0.1.22** every capability is host-plane and applies to **every agent** the
+moment you install the bundle — no preset step needed:
 
-```bash
-# Full mode: memory + skill management tools
-dsh-mind install-preset mind-active
+- `memory` tool (global memory + experience-library search)
+- `skill_manage` tool
+- `memory-nudge` (review reminders) and `memory-guidance` (usage guidance)
+- skill-usage telemetry, curator-core governance, and the Web GUI panel
 
-# Lightweight: memory + memory tool (no skill management)
-dsh-mind install-preset mind-light
+The older `mind-active` / `mind-light` presets are kept only for backward
+compatibility and add nothing extra.
 
-# Remove preset
-dsh-mind uninstall-preset mind-active
-```
-
-> **How it works**: The bundle's `cordis.patch.yml` registers host-plane services
-> (skill-usage, curator-core) and the Web client. A preset's `agent.cordis.yml`
-> registers agent-plane rows (`memory-nudge`, `memory-guidance`, `tool-memory`,
-> `tool-skill-manage`). Together they form the complete capability.
->
-> To add dsh-mind to your **default** preset instead of switching presets, copy
-> those four agent-plane rows into your preset (e.g. `~/.dsh/.agent-presets/cordis-tuned/agent.cordis.yml`).
+> To keep dsh-mind off specific presets, disable the rows in your profile's
+> `cordis.patch.yml` (e.g. set `disabled: true` on `memory-nudge` or `tool-memory`).
 
 ## Agent tools
 
-With a preset installed, the agent gets two tools:
+Every agent gets these two tools by default:
 
 | Tool | Actions | Backing store |
 |---|---|---|

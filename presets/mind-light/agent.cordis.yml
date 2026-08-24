@@ -1,24 +1,7 @@
-# dsh-mind / mind-light preset — 轻量模式
+# dsh-mind / mind-light preset — 已废弃
 #
-# 只提供记忆相关能力：
-#   - 记忆审查提醒（memory-nudge）
-#   - 记忆使用指导（memory-guidance）
+# 自 0.1.22 起，dsh-mind 的全部能力（memory 工具、skill_manage、记忆提醒、
+# 使用引导、host 服务、Web GUI）都注册在 **host 层**，装完即对所有 agent 生效，
+# 不再需要安装/切换预设。
 #
-# 不含技能管理工具，适合只需要记忆功能、不需要自动治理的轻量场景。
-# 安装：将本目录复制到 ~/.dsh/.agent-presets/mind-light/
-
-# ── Memory ────────────────────────────────────────────────────────────────
-
-# 每 N 轮对话后提醒 agent 审查记忆库，保持记忆精炼。
-- id: memory-nudge
-  name: '@wumihaze/dsh-mind/memory/nudge'
-  config:
-    intervalTurns: 10
-
-# 系统提示：教导 agent 如何正确使用记忆系统。
-- id: memory-guidance
-  name: '@wumihaze/dsh-mind/memory/guidance'
-
-# 提供 memory 工具：list / search / add / replace / remove。
-- id: tool-memory
-  name: '@wumihaze/dsh-mind/tool/memory'
+# 保留此空壳仅为了向前兼容；安装它不会有额外效果。

@@ -1,8 +1,10 @@
-# dsh-mind bundle patch — HOST-PLANE services only.
+# dsh-mind bundle patch — HOST-PLANE rows.
 # Applied after dsh-base and before the user's profile patch.
 #
-# Agent-plane plugins (memory-nudge, memory-guidance, tool-skill-manage)
-# are provided by the shipped presets (presets/mind-active/ and presets/mind-light/).
+# Everything here is host-plane so the capabilities are enabled for EVERY agent
+# by default — no preset step needed. Agent-plane rows (memory-nudge, guidance,
+# the memory tool, skill_manage) register their tools/prompt/agent listeners at
+# the host scope, which is visible to all sessions.
 #
 # All plugin names reference sub-exports of @wumihaze/dsh-mind,
 # resolved via the package's `exports` field.
@@ -36,3 +38,21 @@
 
     - id: dsh-mind-web
       name: '@wumihaze/dsh-mind/web'
+
+    # ── Agent capabilities (host-plane, enabled for every agent) ──────
+    # Previously these lived in the mind-active/mind-light presets and required
+    # an extra install step. Now they are host rows so every agent gets them.
+
+    - id: memory-nudge
+      name: '@wumihaze/dsh-mind/memory/nudge'
+      config:
+        intervalTurns: 8
+
+    - id: memory-guidance
+      name: '@wumihaze/dsh-mind/memory/guidance'
+
+    - id: tool-memory
+      name: '@wumihaze/dsh-mind/tool/memory'
+
+    - id: tool-skill-manage
+      name: '@wumihaze/dsh-mind/tool/skill-manage'
