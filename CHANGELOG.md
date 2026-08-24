@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-08-25
+
+### Fixed
+
+- **Module duplication breaking agent presets**: `@deepseek-ai/*` harness packages were declared as
+  `dependencies`, so `dsh plugin add` installed real copies into the profile's `node_modules`. Two
+  instances of `@deepseek-ai/dsh-scope` meant two different `Symbol("dsh.scope")` keys, so a preset's
+  `persona` row could no longer shadow the deployment persona and every session failed to mount with
+  `prompt section "deployment:persona" is already registered`. All `@deepseek-ai/*` packages moved to
+  `peerDependencies` (consumed from the DSH runtime; with `autoInstallPeers: false` they are no longer
+  copied into the profile), matching the `dshmarket` pattern. Kept only third-party utilities
+  (`clsx`, `yaml`) as dependencies.
+- **Broken web client inject**: `dsh.client.inject` referenced `@deepseek-ai/dsh-client-ui-primitives`,
+  a package the DSH runtime does not provide (it is a dev-time package only), so the Web GUI module
+  injection would fail to load dsh-mind's panel. Replaced with `@deepseek-ai/dsh-client-ui-theme`
+  (matches the runtime-inject pattern used by `dshmarket` and provides the `theme` service the client
+  declares).
+- Dev `prepublishOnly` switched to `npm run build` (portable without pnpm).
+
+### Changed
+
+- Version bumped to 0.1.3.
+
 ## [0.1.0] - 2026-08-01
 
 ### Added

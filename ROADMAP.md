@@ -68,9 +68,9 @@
 
 ## Phase 7：发布与 CI
 
-- [ ] 7.1 npm 账号：`@wumihaze` scope 创建
-- [ ] 7.2 `pnpm publish`：首次发布 v1.0.0
-- [ ] 7.3 `pnpm pack`：同时出 `.tgz` 供不想用 npm 的人
+- [x] 7.1 npm 账号：`@wumihaze` scope 创建
+- [x] 7.2 `npm publish`：首次发布 v0.1.0 → v0.1.1（`@wumihaze/dsh-mind`）
+- [x] 7.3 `npm pack`：同时出 `.tgz` 供不想用 npm 的人
 - [ ] 7.4 GitHub Actions：CI（lint → typecheck → test → build）
 - [ ] 7.5 Release 工作流：tag → 自动 build → publish → GitHub Release
 - [ ] 7.6 徽章：npm version、CI status、license

@@ -20,7 +20,7 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 ## Quick Start
 
 ```bash
-dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
+dsh plugin --profile web add @wumihaze/dsh-mind
 ```
 
 Installed and ready to use. Three capabilities available immediately:
@@ -47,11 +47,11 @@ dsh-mind status                  # view governance status
 ## Installation
 
 ```bash
-# From npm (after publishing)
-dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
+# From npm
+dsh plugin --profile web add @wumihaze/dsh-mind
 
 # From local checkout
-dsh plugin --profile <your-profile> add ./dsh-mind
+dsh plugin --profile web add ./dsh-mind
 ```
 
 ### Enabling Agent Capabilities (Preset)

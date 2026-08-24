@@ -17,10 +17,10 @@
 | **Web GUI** | 记忆面板、技能仪表盘、治理控制台（DSH Web 插件） |
 | **Preset** | 一键安装 agent preset（全开或轻量） |
 
-## 快速开始
+## 一行安装
 
 ```bash
-dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
+dsh plugin --profile web add @wumihaze/dsh-mind
 ```
 
 装完即生效，三个能力立即可用：
@@ -47,11 +47,11 @@ dsh-mind status                  # 查看治理状态
 ## 安装
 
 ```bash
-# 方式 1：从 npm（发布后）
-dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
+# 从 npm
+dsh plugin --profile web add @wumihaze/dsh-mind
 
-# 方式 2：从本地 checkout
-dsh plugin --profile <your-profile> add ./dsh-mind
+# 从本地 checkout
+dsh plugin --profile web add ./dsh-mind
 ```
 
 ### 启用 Agent 能力（Preset）
