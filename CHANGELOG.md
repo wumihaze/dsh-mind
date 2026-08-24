@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-08-25
+
+### Fixed
+
+- **`@wumihaze/dsh-mind` bare-name loader entry intermittently failed to apply**
+  (`invalid plugin ... received undefined`) during plugin upgrades: the anchor
+  row mounted the package main as a no-op plugin, and re-importing it while pnpm
+  replaced the package files could resolve to `undefined`. Dropped the bare-name
+  row entirely. Client registration now rides the already-mounted `skill-usage`
+  loader entry: `dsh-client-modules` resolves `<entry>/package.json`, so the
+  package now exports `./skill-usage/package.json` → `./package.json`. No new
+  import surface, so the failure mode is gone. The package main reverts to pure
+  re-exports.
+
 ## [0.1.5] - 2026-08-25
 
 ### Fixed

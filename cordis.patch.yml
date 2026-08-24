@@ -8,15 +8,10 @@
 # resolved via the package's `exports` field.
 
 - insert:
-    # ── Client-registration anchor ────────────────────────────────────
-    # A loader entry named exactly the bare package name is what registers the
-    # Web client bundle (`dsh-client-modules` resolves <entry>/package.json and
-    # reads `dsh.client`). The package main is a no-op plugin; the services
-    # below are the real work.
-    - id: dsh-mind
-      name: '@wumihaze/dsh-mind'
-
     # ── Skill usage tracking (host service) ───────────────────────────
+    # This row also registers the Web client bundle: `dsh-client-modules` keys
+    # client registration on a loader entry name, resolves `<entry>/package.json`
+    # (see the `./skill-usage/package.json` export) and reads `dsh.client`.
 
     - id: skill-usage
       name: '@wumihaze/dsh-mind/skill-usage'
