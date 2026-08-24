@@ -23,11 +23,26 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
 ```
 
-装完即生效，三个能力立即可用：
+Installed and ready to use. Three capabilities available immediately:
 
-1. **跨会话记忆** — `dsh-mind memory add "内容"` / `dsh-mind memory search "关键词"`
-2. **技能治理** — `dsh-mind status` / `dsh-mind archive <name>` / `dsh-mind restore <name>`
-3. **Web GUI** — DSH Web 中打开 Mind 面板（记忆管理、技能仪表盘、治理控制台）
+**1. Memory** — let your agent remember things across sessions
+
+```bash
+dsh-mind memory add "User prefers concise replies"
+dsh-mind memory search "prefers"
+dsh-mind memory list
+```
+
+**2. Skill governance** — manage your skills (directories under `~/.dsh/skills/`)
+
+```bash
+dsh-mind list                    # list all skills
+dsh-mind archive code-review     # archive a skill (agent stops loading it)
+dsh-mind restore code-review     # restore an archived skill
+dsh-mind status                  # view governance status
+```
+
+**3. Web GUI** — open the Mind panel in DSH Web to manage all of the above visually
 
 ## Installation
 

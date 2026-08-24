@@ -25,9 +25,24 @@ dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
 
 装完即生效，三个能力立即可用：
 
-1. **跨会话记忆** — `dsh-mind memory add "内容"` / `dsh-mind memory search "关键词"`
-2. **技能治理** — `dsh-mind status` / `dsh-mind archive <name>` / `dsh-mind restore <name>`
-3. **Web GUI** — DSH Web 中打开 Mind 面板（记忆管理、技能仪表盘、治理控制台）
+**1. 记忆** — 让 agent 记住跨会话有用的信息
+
+```bash
+dsh-mind memory add "用户偏好简洁回复"
+dsh-mind memory search "偏好"
+dsh-mind memory list
+```
+
+**2. 技能治理** — 管理你的技能目录（`~/.dsh/skills/` 下的技能）
+
+```bash
+dsh-mind list                    # 查看所有技能
+dsh-mind archive code-review     # 归档某个技能（agent 不再加载）
+dsh-mind restore code-review     # 恢复已归档的技能
+dsh-mind status                  # 查看治理状态
+```
+
+**3. Web GUI** — 在 DSH Web 里打开 Mind 面板，可视化操作以上所有功能
 
 ## 安装
 
