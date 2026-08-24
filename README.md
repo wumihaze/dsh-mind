@@ -1,149 +1,189 @@
 # dsh-mind
 
-> 给你的 DSH agent 一颗大脑 — 跨会话记忆 + 技能自治理。
+> Give your DSH agent a brain — persistent memory + self-curating skills.
 
-为任意 DSH agent profile 添加**跨会话记忆**与**技能生命周期管理**的 DSH bundle。
+A DSH bundle that adds **cross-session memory** and **skill lifecycle management** to any DSH agent profile. All data stays local. No external services required.
 
-## 功能
+**[中文文档](./README.zh.md)**
 
-| 能力 | 说明 |
+## Features
+
+| Capability | Description |
 |---|---|
-| **记忆** | Agent 跨会话记录和召回经验（文件存储，纯本地） |
-| **技能使用追踪** | 追踪 agent 使用哪些技能、何时、频率 |
-| **技能治理** | 自动归档过期技能（30d → stale, 90d → archived），支持快照与回滚 |
+| **Memory** | Agent records and recalls experiences across sessions (file-based, pure local) |
+| **Skill Usage Tracking** | Tracks which skills are used, when, and how often |
+| **Skill Governance** | Auto-archives stale skills (30d → stale, 90d → archived), with snapshots & rollback |
 | **CLI** | `dsh-mind status / run / archive / restore / memory / install-preset ...` |
-| **Preset** | 随包附带 agent preset，一键启用记忆 + 技能管理 |
+| **Web GUI** | Memory panel, skill dashboard, curator console (DSH Web plugin) |
+| **Presets** | One-command agent preset installation (full or lightweight) |
 
-## 安装
+## Quick Start (3 steps)
 
 ```bash
-# 方式 1：从 npm（发布后）
+# 1. Install
 dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
 
-# 方式 2：从本地 checkout
+# 2. Enable agent capabilities
+dsh-mind install-preset mind-active
+
+# 3. Use
+dsh --profile <your-profile>          # start a session; agent now has memory + skill tools
+```
+
+That's it. The agent will:
+- Remember things you tell it (`memory add`)
+- Suggest reviewing memory every 8 turns
+- Auto-archive skills unused for 90 days
+- Track skill usage for the dashboard
+
+## Installation
+
+```bash
+# From npm (after publishing)
+dsh plugin --profile <your-profile> add @wumihaze/dsh-mind
+
+# From local checkout
 dsh plugin --profile <your-profile> add ./dsh-mind
 ```
 
-## 启用 Agent 能力（Preset）
+### Enabling Agent Capabilities (Preset)
 
-Bundle 安装后，host 层服务（skill-usage、curator）自动生效。
-要让 agent 获得**记忆提醒**和**技能管理工具**，需要安装一个 agent preset：
+After bundle install, host-plane services (skill-usage, curator) are active automatically.
+To give the **agent** memory reminders and skill management tools, install a preset:
 
 ```bash
-# 全开模式：记忆 + 技能管理工具
+# Full mode: memory + skill management tools
 dsh-mind install-preset mind-active
 
-# 轻量模式：仅记忆（无技能管理工具）
+# Lightweight: memory only (no skill management tools)
 dsh-mind install-preset mind-light
-```
 
-安装后，启动 DSH 会话时选择对应的 preset 即可：
-
-- **Mind（全开）** — 记忆审查提醒 + 记忆使用指导 + 技能管理工具
-- **Mind（轻量）** — 仅记忆审查提醒 + 记忆使用指导
-
-```bash
-# 移除 preset
+# Remove preset
 dsh-mind uninstall-preset mind-active
 ```
 
-> **原理**：Bundle 的 `cordis.patch.yml` 注册 host 层服务（skill-usage、curator-core），
-> preset 的 `agent.cordis.yml` 注册 agent 层插件（memory-nudge、memory-guidance、skill-manage tool）。
-> 两者配合工作：agent 层工具调用 host 层服务完成治理操作。
+> **How it works**: The bundle's `cordis.patch.yml` registers host-plane services (skill-usage,
+> curator-core). Preset `agent.cordis.yml` registers agent-plane plugins (memory-nudge,
+> memory-guidance, skill-manage tool). Together they form the complete capability.
 
-## CLI
+## CLI Reference
 
 ```bash
-# Curator 管理
-dsh-mind status              # 查看治理状态和技能摘要
-dsh-mind run                 # 执行一次治理（启发式）
-dsh-mind pause               # 暂停自动治理
-dsh-mind resume              # 恢复自动治理
-dsh-mind archive <name>      # 归档技能
-dsh-mind restore <name>      # 恢复已归档技能
-dsh-mind list                # 列出所有技能
-dsh-mind snapshots           # 查看快照列表
-dsh-mind rollback <id>       # 回滚到指定快照
-dsh-mind prune --days 30     # 清理 N 天前的快照
+# Curator management
+dsh-mind status              # View governance status and skill summary
+dsh-mind run                 # Execute one curation cycle (heuristic)
+dsh-mind pause               # Pause auto-curation
+dsh-mind resume              # Resume auto-curation
+dsh-mind archive <name>      # Archive a skill
+dsh-mind restore <name>      # Restore an archived skill
+dsh-mind list                # List all skills
+dsh-mind snapshots           # View snapshot list
+dsh-mind rollback <id>       # Rollback to a specific snapshot
+dsh-mind prune --days 30     # Prune snapshots older than N days
 
-# 记忆管理
-dsh-mind memory add <text>        # 添加记忆
-dsh-mind memory search <keyword>  # 搜索记忆
-dsh-mind memory list              # 列出所有记忆
+# Memory management
+dsh-mind memory add <text>        # Add a memory entry
+dsh-mind memory search <keyword>  # Search memories
+dsh-mind memory list              # List all memories
 
-# Preset 管理
-dsh-mind install-preset [name]    # 安装 preset（不带 name 列出可用）
-dsh-mind uninstall-preset <name>  # 移除 preset
+# Preset management
+dsh-mind install-preset [name]    # Install preset (without name: list available)
+dsh-mind uninstall-preset <name>  # Remove preset
 ```
 
-退出码：`0`=成功，`1`=失败，`2`=参数错误
+Exit codes: `0` = success, `1` = failure, `2` = argument error
 
-## 架构
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  dsh-mind (bundle)                                       │
 │                                                         │
-│  Host 层（cordis.patch.yml 自动注册）                    │
+│  Host-plane (cordis.patch.yml auto-registers)           │
 │  ┌────────────────┐  ┌────────────────┐                 │
-│  │  skill-usage   │  │  curator-core  │  ← 服务         │
+│  │  skill-usage   │  │  curator-core  │  ← services     │
 │  │  (tracking)    │  │  (governance)  │                 │
 │  └────────────────┘  └────────────────┘                 │
 │                                                         │
-│  Agent 层（preset 注册）                                 │
+│  Agent-plane (preset registers)                          │
 │  ┌────────────────┐  ┌────────────────┐  ┌───────────┐  │
 │  │ memory-nudge   │  │memory-guidance │  │ skill-    │  │
 │  │ (prompt)       │  │(prompt)        │  │ manage    │  │
 │  └────────────────┘  └────────────────┘  │ (tool)    │  │
 │                                         └───────────┘  │
 │                                                         │
-│  CLI（独立 bin，零外部依赖）                              │
+│  CLI (standalone bin, zero external deps)               │
 │  ┌─────────────────────────────────────────────────────┐ │
 │  │ dsh-mind status / run / archive / memory / preset   │ │
 │  └─────────────────────────────────────────────────────┘ │
 │                                                         │
-│  数据存储（~/.dsh/）                                     │
+│  Web GUI (DSH Web plugin)                                │
+│  ┌─────────────────────────────────────────────────────┐ │
+│  │ Memory panel │ Skill dashboard │ Curator console    │ │
+│  └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│  Data storage (~/.dsh/)                                  │
 │  ┌─────────────────────────────────────────────────────┐ │
 │  │ memory/MEMORY.md  skills/  curator/  skill-usage/   │ │
 │  └─────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## 配置参考
+## Configuration Reference
 
-| 参数 | 默认值 | 说明 |
+| Parameter | Default | Description |
 |---|---|---|
-| `staleAfterDays` | 30 | 技能未使用 N 天后标记为 stale |
-| `archiveAfterDays` | 90 | 技能未使用 N 天后自动归档 |
-| `intervalDays` | 7 | 治理检查间隔（天） |
-| `minIdleMinutes` | 120 | 会话空闲 N 分钟后触发治理 |
-| `intervalTurns` (nudge) | 8 | 每 N 轮对话后提醒审查记忆 |
+| `staleAfterDays` | 30 | Mark skill as stale after N days unused |
+| `archiveAfterDays` | 90 | Auto-archive skill after N days unused |
+| `intervalDays` | 7 | Curation check interval (days) |
+| `minIdleMinutes` | 120 | Trigger curation after N minutes idle |
+| `intervalTurns` (nudge) | 8 | Remind memory review every N conversation turns |
 
-配置方式：编辑 profile 的 `cordis.patch.yml` 中 `curator-core` 行的 `config` 块，
-或编辑 preset 的 `agent.cordis.yml` 中 `memory-nudge` 行的 `config` 块。
+**Where to configure**: Edit the `config` block in your profile's `cordis.patch.yml`
+(for `curator-core`) or the preset's `agent.cordis.yml` (for `memory-nudge`).
 
-## 数据位置
+## Data Locations
 
-所有数据存储在 `~/.dsh/` 下：
+All data lives under `~/.dsh/`:
 
 ```
 ~/.dsh/
-├── memory/MEMORY.md          # 记忆条目（bullet list）
-├── skills/                   # 活跃技能
+├── memory/MEMORY.md          # Memory entries (bullet list, 2200 char budget)
+├── skills/                   # Active skills
 │   └── <name>/SKILL.md
-├── skills/_archived/         # 已归档技能
-├── curator/state.json        # 治理状态
-├── curator/snapshots/        # 治理快照
-└── skill-usage/index.json    # 技能使用记录
+├── skills/_archived/         # Archived skills
+├── skills/.system/curator/state.json      # Governance state
+├── skills/.system/curator/snapshots/      # Governance snapshots
+└── skills/.system/curator/usage.json      # Skill usage records
 ```
 
-卸载 bundle 不会删除数据。
+Uninstalling the bundle does **not** delete data.
 
-## 要求
+## Requirements
 
 - DSH ≥ 0.1.1-rc
 - Node.js ≥ 20
 
+## FAQ
+
+**Where is my data stored?**
+All data is local under `~/.dsh/`. No cloud, no external service. Memory is a plain Markdown file you can read and edit directly.
+
+**Can I uninstall without losing data?**
+Yes. `dsh plugin remove dsh-mind` removes the bundle but all data files remain in `~/.dsh/`. Reinstall to pick up where you left off.
+
+**What's the difference from Letta (MemGPT)?**
+Letta is a full agent framework with server-side memory. dsh-mind is a lightweight DSH bundle: no server, no database, file-based storage, and it integrates into your existing DSH agent rather than replacing it. Think of it as "memory as a file" vs "memory as a service".
+
+**Will the agent remember everything?**
+The memory file has a 2200-character budget. The agent is nudged to review and consolidate memories, so it learns to keep the most important facts. It's not infinite storage — it's designed for high-value, curated knowledge.
+
+**What happens to archived skills?**
+Archived skills move to `~/.dsh/skills/_archived/<name>/`. They're no longer loaded into the agent's skill list, but you can restore them anytime with `dsh-mind restore <name>`.
+
+**Does it work on Windows?**
+Yes. All paths use `path.join`, writes are atomic (rename), and CRLF is handled. Tested on Windows 11.
+
 ## License
 
-MIT
+[MIT](./LICENSE)
