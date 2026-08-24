@@ -17,7 +17,7 @@
  */
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises'
+import { readFile, writeFile, mkdir, readdir, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -221,6 +221,68 @@ export function mountMindRoutes(host: MindHost): () => void {
           await writeMemory(entries)
           const topics = await listMemoryTopics()
           json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 })
+          return
+        }
+
+        return err(res, 'method not allowed', 405)
+      },
+    }),
+  )
+
+  // POST /dsh-mind/memory/topic — create a new per-topic memory file
+  disposes.push(
+    host.webServer.register({
+      kind: 'exact',
+      path: '/dsh-mind/memory/topic',
+      handler: async (req: IncomingMessage, res: ServerResponse) => {
+        if (req.method !== 'POST') return err(res, 'method not allowed', 405)
+        const body = await readBody(req)
+        const name = typeof body.name === 'string' ? body.name.trim() : ''
+        const content = typeof body.content === 'string' ? body.content : ''
+        if (!name || !/^[a-z0-9-]+$/i.test(name)) return err(res, 'topic name must be a simple filename (a-z, 0-9, hyphen)')
+        if (!content) return err(res, 'content is required')
+        const dir = join(DSH_HOME, 'memory')
+        if (!existsSync(dir)) await mkdir(dir, { recursive: true })
+        const file = join(dir, `${name}.md`)
+        if (existsSync(file)) return err(res, `topic "${name}" already exists`, 409)
+        await writeFile(file, content, 'utf-8')
+        json(res, { name, status: 'created' }, 201)
+      },
+    }),
+  )
+
+  // GET / PUT / DELETE /dsh-mind/memory/topic/<name> — view, edit, or delete a topic file
+  disposes.push(
+    host.webServer.register({
+      kind: 'prefix',
+      path: '/dsh-mind/memory/topic',
+      handler: async (req: IncomingMessage, res: ServerResponse) => {
+        const url = new URL(req.url ?? '', 'http://localhost')
+        const parts = url.pathname.split('/').filter(Boolean)
+        const name = parts[parts.length - 1] // dsh-mind/memory/topic/<name>
+        if (!name || !/^[a-z0-9-]+$/i.test(name)) return err(res, 'invalid topic name')
+        const file = join(DSH_HOME, 'memory', `${name}.md`)
+
+        if (req.method === 'GET') {
+          if (!existsSync(file)) return err(res, 'topic not found', 404)
+          json(res, { name, content: await readFile(file, 'utf-8') })
+          return
+        }
+
+        if (req.method === 'PUT') {
+          const body = await readBody(req)
+          const content = typeof body.content === 'string' ? body.content : ''
+          if (!content) return err(res, 'content is required')
+          if (!existsSync(file)) return err(res, 'topic not found', 404)
+          await writeFile(file, content, 'utf-8')
+          json(res, { name, status: 'saved' })
+          return
+        }
+
+        if (req.method === 'DELETE') {
+          if (!existsSync(file)) return err(res, 'topic not found', 404)
+          await rm(file, { force: true })
+          json(res, { name, status: 'deleted' })
           return
         }
 

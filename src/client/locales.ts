@@ -38,7 +38,15 @@ export const zh: Record<string, string> = {
   'memory.save': '保存',
   'memory.cancel': '取消',
   'memory.edit_success': '已保存',
-  'memory.topics': '主题记忆（按主题文件，只读）',
+  'memory.topics': '主题记忆',
+  'memory.topic_new': '新建主题',
+  'memory.topic_name_placeholder': '主题名（小写字母/数字/连字符，如 dsh-notes）',
+  'memory.topic_content_placeholder': '用 Markdown 写内容，以 # 标题开头…',
+  'memory.topic_create': '创建',
+  'memory.topic_saved': '主题已保存',
+  'memory.topic_deleted': '主题已删除',
+  'memory.topic_created': '主题已创建',
+  'memory.topic_delete_confirm': '确定要删除主题「{name}」吗？',
 
   // ── Skills ──
   'skills.title': '技能仪表盘',
@@ -120,7 +128,15 @@ export const en: Record<string, string> = {
   'memory.save': 'Save',
   'memory.cancel': 'Cancel',
   'memory.edit_success': 'Saved',
-  'memory.topics': 'Topic memory (per-topic files, read-only)',
+  'memory.topics': 'Topic memory',
+  'memory.topic_new': 'New topic',
+  'memory.topic_name_placeholder': 'Topic name (a-z, 0-9, hyphens, e.g. dsh-notes)',
+  'memory.topic_content_placeholder': 'Markdown content, start with a # heading…',
+  'memory.topic_create': 'Create',
+  'memory.topic_saved': 'Topic saved',
+  'memory.topic_deleted': 'Topic deleted',
+  'memory.topic_created': 'Topic created',
+  'memory.topic_delete_confirm': 'Delete topic "{name}"?',
 
   // ── Skills ──
   'skills.title': 'Skill Dashboard',

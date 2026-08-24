@@ -17,6 +17,12 @@ interface MemoryData {
   budget: number
 }
 
+interface TopicEditorState {
+  name: string
+  title: string
+  content: string
+}
+
 interface MemoryPanelProps {
   t: (key: string) => string
 }
@@ -32,6 +38,10 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
   const [msg, setMsg] = useState<string | null>(null)
   const [editingIdx, setEditingIdx] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
+  const [topicEditor, setTopicEditor] = useState<TopicEditorState | null>(null)
+  const [creatingTopic, setCreatingTopic] = useState(false)
+  const [newTopicName, setNewTopicName] = useState('')
+  const [newTopicContent, setNewTopicContent] = useState('')
 
   const load = useCallback(async () => {
     try {
@@ -88,6 +98,68 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
     setEditText(text)
   }
 
+  const openTopicEditor = async (name: string) => {
+    try {
+      const res = await fetch(`/dsh-mind/memory/topic/${name}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const d = await res.json()
+      setTopicEditor({ name, title: name, content: d.content ?? '' })
+      setError(null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const saveTopic = async () => {
+    if (!topicEditor) return
+    try {
+      const res = await fetch(`/dsh-mind/memory/topic/${topicEditor.name}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: topicEditor.content }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setTopicEditor(null)
+      setMsg(t('memory.topic_saved'))
+      void load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const deleteTopic = async (name: string, title: string) => {
+    if (!confirm(t('memory.topic_delete_confirm').replace('{name}', title))) return
+    try {
+      const res = await fetch(`/dsh-mind/memory/topic/${name}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setMsg(t('memory.topic_deleted'))
+      void load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const createTopic = async () => {
+    const name = newTopicName.trim()
+    const content = newTopicContent.trim()
+    if (!name || !content) return
+    try {
+      const res = await fetch('/dsh-mind/memory/topic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, content }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setCreatingTopic(false)
+      setNewTopicName('')
+      setNewTopicContent('')
+      setMsg(t('memory.topic_created'))
+      void load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   const saveEdit = async (idx: number) => {
     const text = editText.trim()
     if (!text) return
@@ -132,18 +204,82 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
       {msg && <div className={styles.toast}>{msg}</div>}
       {error && <div className={styles.error}>{error}</div>}
 
-      {/* Topic memory files (read-only, from ~/.dsh/memory/*.md) */}
-      {data && data.topics.length > 0 && (
+      {/* Topic memory files (from ~/.dsh/memory/*.md) */}
+      {(data && data.topics.length > 0) || creatingTopic ? (
         <div className={styles.topicSection}>
-          <h4 className={styles.topicTitle}>{t('memory.topics')}</h4>
+          <h4 className={styles.topicTitle}>
+            {t('memory.topics')}{' '}
+            <button className={styles.btnSmall} onClick={() => setCreatingTopic(!creatingTopic)}>
+              {t('memory.topic_new')}
+            </button>
+          </h4>
+          {creatingTopic && (
+            <div className={styles.topicEditor}>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder={t('memory.topic_name_placeholder')}
+                value={newTopicName}
+                onChange={(e) => setNewTopicName(e.target.value)}
+              />
+              <textarea
+                className={styles.input}
+                rows={5}
+                placeholder={t('memory.topic_content_placeholder')}
+                value={newTopicContent}
+                onChange={(e) => setNewTopicContent(e.target.value)}
+              />
+              <div className={styles.addRow}>
+                <button className={styles.btnPrimary} onClick={() => void createTopic()}>
+                  {t('memory.topic_create')}
+                </button>
+                <button className={styles.btnSecondary} onClick={() => setCreatingTopic(false)}>
+                  {t('memory.cancel')}
+                </button>
+              </div>
+            </div>
+          )}
           <ul className={styles.list}>
-            {data.topics.map((tp) => (
+            {data?.topics.map((tp) => (
               <li key={tp.name} className={styles.topicItem}>
                 <span className={styles.topicName}>{tp.title || tp.name}</span>
                 <span className={styles.topicPreview}>{tp.preview}</span>
+                <span className={styles.topicActions}>
+                  <button className={styles.btnSmall} onClick={() => void openTopicEditor(tp.name)}>
+                    {t('memory.edit')}
+                  </button>
+                  <button
+                    className={styles.btnDanger}
+                    onClick={() => void deleteTopic(tp.name, tp.title || tp.name)}
+                    title={t('memory.remove')}
+                  >
+                    ×
+                  </button>
+                </span>
               </li>
             ))}
           </ul>
+        </div>
+      ) : null}
+
+      {/* Topic editor (markdown) */}
+      {topicEditor && (
+        <div className={styles.topicEditor}>
+          <h4 className={styles.topicTitle}>{topicEditor.name}.md</h4>
+          <textarea
+            className={styles.input}
+            rows={14}
+            value={topicEditor.content}
+            onChange={(e) => setTopicEditor({ ...topicEditor, content: e.target.value })}
+          />
+          <div className={styles.addRow}>
+            <button className={styles.btnPrimary} onClick={() => void saveTopic()}>
+              {t('memory.save')}
+            </button>
+            <button className={styles.btnSecondary} onClick={() => setTopicEditor(null)}>
+              {t('memory.cancel')}
+            </button>
+          </div>
         </div>
       )}
 
