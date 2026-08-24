@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-08-25
+
+### Fixed
+
+- **Web GUI panel never loaded**: `dsh-client-modules` registers a plugin's
+  client bundle by keying on a Loader entry whose name is the **bare package
+  name** (it resolves `<entry>/package.json` and reads `dsh.client`). The bundle
+  patch only mounted subpath rows (`@wumihaze/dsh-mind/skill-usage` etc.), so
+  `@wumihaze/dsh-mind` was never a Loader entry and the client was never in the
+  `__DSH_BOOT__` manifest (dshmarket works because its patch mounts the bare
+  `dshmarket`). Added a `@wumihaze/dsh-mind` anchor row and made the package
+  main a valid no-op plugin, so the Web panel registers and loads.
+
+### Changed
+
+- Version bumped to 0.1.4.
+
 ## [0.1.3] - 2026-08-25
 
 ### Fixed
