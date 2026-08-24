@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-08-25
+
+### Added
+
+- **Per-topic memory files now surfaced**: dsh-mind previously only read the
+  bullet-style `MEMORY.md`, so the agent's real per-topic memory library
+  (`~/.dsh/memory/comfyui.md`, `dsh.md`, `prefs.md`, …) was invisible. The Web
+  panel now lists those topic files (read-only, with title + preview) and the
+  `memory` tool's `list`/`search` also search them.
+
 ## [0.1.15] - 2026-08-25
 
 ### Added

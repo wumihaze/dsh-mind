@@ -4,8 +4,15 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import styles from './Mind.module.css'
 
+interface MemoryTopic {
+  name: string
+  title: string
+  preview: string
+}
+
 interface MemoryData {
   entries: string[]
+  topics: MemoryTopic[]
   totalChars: number
   budget: number
 }
@@ -124,6 +131,21 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
 
       {msg && <div className={styles.toast}>{msg}</div>}
       {error && <div className={styles.error}>{error}</div>}
+
+      {/* Topic memory files (read-only, from ~/.dsh/memory/*.md) */}
+      {data && data.topics.length > 0 && (
+        <div className={styles.topicSection}>
+          <h4 className={styles.topicTitle}>{t('memory.topics')}</h4>
+          <ul className={styles.list}>
+            {data.topics.map((tp) => (
+              <li key={tp.name} className={styles.topicItem}>
+                <span className={styles.topicName}>{tp.title || tp.name}</span>
+                <span className={styles.topicPreview}>{tp.preview}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Entry list */}
       {data && data.entries.length === 0 && (

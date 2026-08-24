@@ -57,6 +57,21 @@ async function writeMemory(entries: string[]): Promise<void> {
   await writeFile(MEMORY_FILE, content, 'utf-8')
 }
 
+/** List the per-topic memory files beside MEMORY.md (comfyui.md, dsh.md, …). */
+async function listMemoryTopics(): Promise<Array<{ name: string; title: string; preview: string }>> {
+  const dir = join(DSH_HOME, 'memory')
+  if (!existsSync(dir)) return []
+  const files = (await readdir(dir)).filter((f) => f.endsWith('.md') && f !== 'MEMORY.md').sort()
+  const topics: Array<{ name: string; title: string; preview: string }> = []
+  for (const f of files) {
+    const content = await readFile(join(dir, f), 'utf-8')
+    const title = (content.split('\n').find((l) => l.startsWith('# ')) ?? '').replace(/^#\s*/, '').trim() || f.replace(/\.md$/, '')
+    const preview = content.replace(/\s+/g, ' ').trim().slice(0, 140)
+    topics.push({ name: f.replace(/\.md$/, ''), title, preview })
+  }
+  return topics
+}
+
 /** Read skill usage index. */
 async function readSkillUsage(): Promise<Record<string, unknown>> {
   if (!existsSync(SKILL_USAGE_FILE)) return {}
@@ -158,13 +173,15 @@ export function mountMindRoutes(host: MindHost): () => void {
           const entries = await readMemory()
           entries.push(text)
           await writeMemory(entries)
-          json(res, { entries, totalChars: entries.join('\n').length }, 201)
+          const topics = await listMemoryTopics()
+          json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 }, 201)
           return
         }
         if (req.method !== 'GET') return err(res, 'method not allowed', 405)
         const entries = await readMemory()
+        const topics = await listMemoryTopics()
         const totalChars = entries.join('\n').length
-        json(res, { entries, totalChars, budget: 2200 })
+        json(res, { entries, topics, totalChars, budget: 2200 })
       },
     }),
   )
@@ -189,7 +206,8 @@ export function mountMindRoutes(host: MindHost): () => void {
           if (idx >= entries.length) return err(res, 'index out of range', 404)
           entries.splice(idx, 1)
           await writeMemory(entries)
-          json(res, { entries, totalChars: entries.join('\n').length })
+          const topics = await listMemoryTopics()
+          json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 })
           return
         }
 
@@ -201,7 +219,8 @@ export function mountMindRoutes(host: MindHost): () => void {
           if (idx >= entries.length) return err(res, 'index out of range', 404)
           entries[idx] = text
           await writeMemory(entries)
-          json(res, { entries, totalChars: entries.join('\n').length })
+          const topics = await listMemoryTopics()
+          json(res, { entries, topics, totalChars: entries.join('\n').length, budget: 2200 })
           return
         }
 

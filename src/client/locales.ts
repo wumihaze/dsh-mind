@@ -38,6 +38,7 @@ export const zh: Record<string, string> = {
   'memory.save': '保存',
   'memory.cancel': '取消',
   'memory.edit_success': '已保存',
+  'memory.topics': '主题记忆（按主题文件，只读）',
 
   // ── Skills ──
   'skills.title': '技能仪表盘',
@@ -119,6 +120,7 @@ export const en: Record<string, string> = {
   'memory.save': 'Save',
   'memory.cancel': 'Cancel',
   'memory.edit_success': 'Saved',
+  'memory.topics': 'Topic memory (per-topic files, read-only)',
 
   // ── Skills ──
   'skills.title': 'Skill Dashboard',

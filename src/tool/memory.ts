@@ -8,7 +8,7 @@
  * @module @wumihaze/dsh-mind/tool/memory
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
@@ -55,6 +55,19 @@ function writeEntries(path: string, entries: string[]): void {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   const content = '# Memory\n' + entries.map((e) => `- ${e}`).join('\n') + (entries.length > 0 ? '\n' : '')
   writeFileSync(path, content, 'utf8')
+}
+
+/** List per-topic memory files beside MEMORY.md (comfyui.md, dsh.md, …). */
+function readTopics(root: string): Array<{ name: string; title: string; text: string }> {
+  const dir = join(root, 'memory')
+  if (!existsSync(dir)) return []
+  const topics: Array<{ name: string; title: string; text: string }> = []
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.md') && x !== 'MEMORY.md').sort()) {
+    const text = readFileSync(join(dir, f), 'utf8')
+    const title = (text.split('\n').find((l) => l.startsWith('# ')) ?? '').replace(/^#\s*/, '').trim() || f.replace(/\.md$/, '')
+    topics.push({ name: f.replace(/\.md$/, ''), title, text })
+  }
+  return topics
 }
 
 /**
@@ -117,6 +130,17 @@ export function apply(ctx: Context, config: Config = {}): void {
               },
             },
           },
+          topics: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                name: { type: 'string' },
+                title: { type: 'string' },
+              },
+            },
+          },
         },
       },
       render: (_args, value) => [{ type: 'text', text: formatOutput(value) }],
@@ -126,6 +150,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const entries = readEntries(path)
 
       if (action === 'list') {
+        const topics = readTopics(root).map((tp) => ({ name: tp.name, title: tp.title }))
         return {
           action,
           status: 'ok',
@@ -133,6 +158,7 @@ export function apply(ctx: Context, config: Config = {}): void {
           totalChars: entries.join('\n').length,
           budget,
           entries: entries.map((text, index) => ({ index, text })),
+          topics,
         }
       }
 
@@ -142,7 +168,11 @@ export function apply(ctx: Context, config: Config = {}): void {
         const hits = entries
           .map((text, index) => ({ index, text }))
           .filter((h) => h.text.toLowerCase().includes(q))
-        return { action, status: 'ok', query: q, count: hits.length, entries: hits }
+        // Also search the per-topic memory files (dsh.md, comfyui.md, …).
+        const topicHits = readTopics(root)
+          .filter((tp) => `${tp.name} ${tp.title} ${tp.text}`.toLowerCase().includes(q))
+          .map((tp) => ({ name: tp.name, title: tp.title }))
+        return { action, status: 'ok', query: q, count: hits.length, entries: hits, topics: topicHits }
       }
 
       if (action === 'add') {
@@ -191,23 +221,39 @@ function formatOutput(value: Record<string, unknown>): string {
   const action = value.action as string
   const status = value.status as string
   const entries = value.entries as Array<{ index: number; text: string }> | undefined
+  const topics = value.topics as Array<{ name: string; title: string }> | undefined
+
+  const renderTopics = () => {
+    if (topics && topics.length > 0) {
+      parts.push(`Topic files (${topics.length}):`)
+      for (const tp of topics) parts.push(`- ${tp.title} (${tp.name}.md)`)
+    }
+  }
 
   if (action === 'list') {
     const count = value.count as number
     const budget = value.budget as number
     const totalChars = value.totalChars as number
-    if (count === 0) return `Memory is empty (${totalChars}/${budget} chars).`
-    parts.push(`Memory (${count} entries, ${totalChars}/${budget} chars):`)
+    if (count === 0 && !(topics && topics.length > 0)) return `Memory is empty (${totalChars}/${budget} chars).`
+    parts.push(`Quick memory (${count} entries, ${totalChars}/${budget} chars):`)
     for (const e of entries ?? []) parts.push(`[${e.index}] ${e.text}`)
+    if (count === 0) parts.push('(no quick entries)')
+    renderTopics()
     return parts.join('\n')
   }
 
   if (action === 'search') {
     const q = value.query as string
     const count = value.count as number
-    if (count === 0) return `No memory entries match "${q}".`
-    parts.push(`${count} match(es) for "${q}":`)
+    const topicCount = topics?.length ?? 0
+    if (count === 0 && topicCount === 0) return `No memory matches "${q}".`
+    parts.push(`${count} quick entry match(es) for "${q}":`)
     for (const e of entries ?? []) parts.push(`[${e.index}] ${e.text}`)
+    if (count === 0) parts.push('(no quick entries matched)')
+    if (topicCount > 0) {
+      parts.push(`${topicCount} topic file(s) match:`)
+      for (const tp of topics ?? []) parts.push(`- ${tp.title} (${tp.name}.md)`)
+    }
     return parts.join('\n')
   }
 
