@@ -173,7 +173,10 @@ export function mountMindRoutes(host: MindHost): () => void {
   disposes.push(
     host.webServer.register({
       kind: 'prefix',
-      path: '/dsh-mind/memory/',
+      // No trailing slash: the webserver matches prefixes with
+      // `pathname.startsWith(\`${prefix}/\`)`, so a trailing slash would require
+      // a doubled `//` and never match. Paths are `/dsh-mind/memory/<idx>`.
+      path: '/dsh-mind/memory',
       handler: async (req: IncomingMessage, res: ServerResponse) => {
         if (req.method !== 'DELETE') return err(res, 'method not allowed', 405)
         const url = new URL(req.url ?? '', 'http://localhost')
@@ -304,7 +307,8 @@ export function mountMindRoutes(host: MindHost): () => void {
   disposes.push(
     host.webServer.register({
       kind: 'prefix',
-      path: '/dsh-mind/snapshots/',
+      // No trailing slash — see the memory DELETE route note.
+      path: '/dsh-mind/snapshots',
       handler: async (req: IncomingMessage, res: ServerResponse) => {
         if (req.method !== 'POST') return err(res, 'method not allowed', 405)
         const url = new URL(req.url ?? '', 'http://localhost')
