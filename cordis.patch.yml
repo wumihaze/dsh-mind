@@ -1,0 +1,32 @@
+# dsh-mind bundle patch: memory + skill curation layer.
+# Applied after dsh-base (always first) and before the user's profile patch.
+#
+# All plugin names reference sub-exports of @wumihaze/dsh-mind,
+# resolved via the package's `exports` field.
+
+- insert:
+    # ── Memory extensions ──────────────────────────────────────────────
+
+    - id: memory-nudge
+      name: '@wumihaze/dsh-mind/memory/nudge'
+      config:
+        intervalTurns: 8
+
+    - id: memory-guidance
+      name: '@wumihaze/dsh-mind/memory/guidance'
+
+    # ── Skill lifecycle ────────────────────────────────────────────────
+
+    - id: skill-usage
+      name: '@wumihaze/dsh-mind/skill-usage'
+
+    - id: tool-skill-manage
+      name: '@wumihaze/dsh-mind/tool/skill-manage'
+
+    - id: curator-core
+      name: '@wumihaze/dsh-mind/curator'
+      config:
+        staleAfterDays: 30
+        archiveAfterDays: 90
+        intervalDays: 7
+        minIdleMinutes: 120

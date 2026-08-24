@@ -4,13 +4,13 @@
 
 ## Phase 1：Bundle 打包（核心）
 
-- [ ] 1.1 新建仓库 `wumihaze/dsh-mind`，monorepo 结构
-- [ ] 1.2 合并五个包为单包（`src/memory/`、`src/skill-usage/`、`src/curator/`、`src/tool/`）
-- [ ] 1.3 `package.json`：`dsh.bundle.patch` → `./cordis.patch.yml`，`files` 含 `lib/` + patch
-- [ ] 1.4 `cordis.patch.yml`：insert 行（memory、skill-usage、curator、tools）
-- [ ] 1.5 构建系统：`tsconfig.json`（`rootDir: src`, `outDir: lib`），`pnpm build` 脚本
-- [ ] 1.6 子路径导出：`exports: { "./memory", "./skill-usage", "./curator", "./tool", "./invariant" }`
-- [ ] 1.7 依赖声明：`@deepseek-ai/cordis`（peer）、`@deepseek-ai/dsh-tools`、`@deepseek-ai/dsh-home-paths`
+- [x] 1.1 新建仓库 `wumihaze/dsh-mind`，monorepo 结构
+- [x] 1.2 合并五个包为单包（`src/memory/`、`src/skill-usage/`、`src/curator/`、`src/tool/`）
+- [x] 1.3 `package.json`：`dsh.bundle.patch` → `./cordis.patch.yml`，`files` 含 `lib/` + patch
+- [x] 1.4 `cordis.patch.yml`：insert 行（memory、skill-usage、curator、tools）
+- [x] 1.5 构建系统：`tsconfig.json`（`rootDir: src`, `outDir: lib`），`pnpm build` 脚本
+- [x] 1.6 子路径导出：`exports` 含 7 个子入口（memory、skill-usage、curator、tool、skill-validate）
+- [x] 1.7 依赖声明：`@deepseek-ai/cordis`（peer）、`@deepseek-ai/dsh-*`（0.1.1-rc.2）、`yaml`；内联 `skill-validate`
 - [ ] 1.8 本地安装验证：`dsh plugin --profile test add ./dsh-mind` → 启动成功
 - [ ] 1.9 卸载验证：`dsh plugin --profile test remove dsh-mind` → 服务消失，数据保留
 - [ ] 1.10 升级验证：改版本号 → update → 无数据丢失
