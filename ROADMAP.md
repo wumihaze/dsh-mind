@@ -17,13 +17,13 @@
 
 ## Phase 2：CLI 命令
 
-- [ ] 2.1 `dsh mind` 命令组（替代 `dsh curator`，统一入口）
-- [ ] 2.2 子命令：`status` / `run` / `pause` / `resume` / `archive <name>` / `restore <name>` / `list` / `snapshots` / `rollback <id>` / `prune --days N`
-- [ ] 2.3 `dsh mind memory add "内容"` — 手动记一条
-- [ ] 2.4 `dsh mind memory search "关键词"` — 手动查
-- [ ] 2.5 `dsh mind memory list` — 列出所有记忆条目
-- [ ] 2.6 Help 文本：每个子命令 `--help`，含示例
-- [ ] 2.7 退出码规范：0=成功，1=失败，2=参数错
+- [x] 2.1 `dsh-mind` 命令组（独立 bin 脚本，`package.json` → `bin.dsh-mind`）
+- [x] 2.2 子命令：`status` / `run` / `pause` / `resume` / `archive <name>` / `restore <name>` / `list` / `snapshots` / `rollback <id>` / `prune --days N`
+- [x] 2.3 `dsh-mind memory add "内容"` — 手动记一条
+- [x] 2.4 `dsh-mind memory search "关键词"` — 手动查
+- [x] 2.5 `dsh-mind memory list` — 列出所有记忆条目
+- [x] 2.6 Help 文本：`dsh-mind --help` 完整用法说明
+- [x] 2.7 退出码规范：0=成功，1=失败，2=参数错
 
 ## Phase 3：Preset / Profile 配置
 
