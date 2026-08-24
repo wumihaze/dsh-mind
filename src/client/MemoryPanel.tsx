@@ -1,7 +1,7 @@
 /**
  * MemoryPanel: CRUD for persistent memory entries.
  */
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import styles from './Mind.module.css'
 
 interface MemoryTopic {
@@ -42,6 +42,7 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
   const [creatingTopic, setCreatingTopic] = useState(false)
   const [newTopicName, setNewTopicName] = useState('')
   const [newTopicContent, setNewTopicContent] = useState('')
+  const topicEditorRef = useRef<HTMLDivElement | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -61,6 +62,12 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
     const id = setInterval(() => void load(), 5000)
     return () => clearInterval(id)
   }, [load])
+
+  // When the topic editor opens, bring it into view — it used to render below
+  // the (long) topic list and appeared to "do nothing".
+  useEffect(() => {
+    if (topicEditor) topicEditorRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [topicEditor])
 
   const add = async () => {
     const text = newEntry.trim()
@@ -204,12 +211,33 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
       {msg && <div className={styles.toast}>{msg}</div>}
       {error && <div className={styles.error}>{error}</div>}
 
+      {/* Topic editor (markdown) — at the top so opening it is always visible */}
+      {topicEditor && (
+        <div ref={topicEditorRef} className={styles.topicEditor}>
+          <h4 className={styles.topicTitle}>{topicEditor.name}.md</h4>
+          <textarea
+            className={styles.input}
+            rows={14}
+            value={topicEditor.content}
+            onChange={(e) => setTopicEditor({ ...topicEditor, content: e.target.value })}
+          />
+          <div className={styles.addRow}>
+            <button className={styles.btnPrimary} onClick={() => void saveTopic()}>
+              {t('memory.save')}
+            </button>
+            <button className={styles.btnSecondary} onClick={() => setTopicEditor(null)}>
+              {t('memory.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Topic memory files (from ~/.dsh/memory/*.md) */}
       {(data && data.topics.length > 0) || creatingTopic ? (
         <div className={styles.topicSection}>
           <h4 className={styles.topicTitle}>
             {t('memory.topics')}{' '}
-            <button className={styles.btnSmall} onClick={() => setCreatingTopic(!creatingTopic)}>
+            <button className={styles.btnSecondary} onClick={() => setCreatingTopic(!creatingTopic)}>
               {t('memory.topic_new')}
             </button>
           </h4>
@@ -261,27 +289,6 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
           </ul>
         </div>
       ) : null}
-
-      {/* Topic editor (markdown) */}
-      {topicEditor && (
-        <div className={styles.topicEditor}>
-          <h4 className={styles.topicTitle}>{topicEditor.name}.md</h4>
-          <textarea
-            className={styles.input}
-            rows={14}
-            value={topicEditor.content}
-            onChange={(e) => setTopicEditor({ ...topicEditor, content: e.target.value })}
-          />
-          <div className={styles.addRow}>
-            <button className={styles.btnPrimary} onClick={() => void saveTopic()}>
-              {t('memory.save')}
-            </button>
-            <button className={styles.btnSecondary} onClick={() => setTopicEditor(null)}>
-              {t('memory.cancel')}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Entry list */}
       {data && data.entries.length === 0 && (
