@@ -24,8 +24,8 @@ export const zh: Record<string, string> = {
   'status.budget_used': '预算使用',
 
   // ── Memory ──
-  'memory.title': '持久记忆',
-  'memory.desc': '代理的长期记忆条目（总预算 2200 字符）。',
+  'memory.title': '记忆管理',
+  'memory.desc': '全局记忆（agent 快捷备忘，2200 字符预算）+ 经验库（按主题的详细经验文档）。',
   'memory.add_placeholder': '添加全局记忆条目…',
   'memory.add': '添加条目',
   'memory.empty': '暂无记忆条目',
@@ -115,8 +115,8 @@ export const en: Record<string, string> = {
   'status.budget_used': 'Budget used',
 
   // ── Memory ──
-  'memory.title': 'Persistent Memory',
-  'memory.desc': 'Long-term memory entries (2200 char budget).',
+  'memory.title': 'Memory Management',
+  'memory.desc': 'Global memory (quick agent notes, 2200-char budget) + experience library (detailed per-topic docs).',
   'memory.add_placeholder': 'Add a global memory entry…',
   'memory.add': 'Add entry',
   'memory.empty': 'No memory entries yet',

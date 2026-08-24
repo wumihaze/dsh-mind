@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.21] - 2026-08-25
+
+### Changed
+
+- **Panel title & description**: "持久记忆 / 长期记忆条目（2200 预算）" read as if
+  the whole panel were one budgeted store. Now **记忆管理** with a description
+  naming both layers: 全局记忆 (quick agent notes, 2200-char budget) + 经验库
+  (detailed per-topic docs).
+
 ## [0.1.20] - 2026-08-25
 
 ### Changed
