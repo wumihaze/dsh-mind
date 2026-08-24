@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-08-25
+
+### Fixed
+
+- **Web panel never actually loaded in the browser** — the true root cause of the
+  recurring `failed to apply loader entry <id> (@wumihaze/dsh-mind): invalid
+  plugin ... received undefined` (the client `__ModuleLoader__` boot rejects the
+  bundle). The `build:done` hook that wraps the client bundle in
+  `window.__ModuleLoader__.load({ factory })` never added `return
+  module.exports`, so the factory returned `undefined` and the client module
+  loader could not read `apply`. Added the missing return. The host-side
+  manifest/registration was always fine; the failure was purely browser-side.
+
 ## [0.1.7] - 2026-08-25
 
 ### Fixed

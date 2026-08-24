@@ -128,6 +128,9 @@ export default {
         'var exports = module.exports;',
         'Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });',
         content,
+        // Without this, the factory returns undefined and the client module
+        // loader rejects the bundle ("invalid plugin ... received undefined").
+        'return module.exports;',
         `}});`,
         '',
       ].join('\n')
