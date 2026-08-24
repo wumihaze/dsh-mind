@@ -383,7 +383,7 @@ async function cmdMemorySearch(keyword: string): Promise<number> {
     console.log(`No matches for "${keyword}".`)
   }
   // Semantic augment (best-effort; skips silently when not configured).
-  const cfg = resolveSearchConfig()
+  const cfg = resolveSearchConfig(void 0, dshHome())
   if (cfg) {
     const semantic = await semanticSearch(dshHome(), keyword, cfg)
     if (semantic && semantic.length > 0) {
@@ -401,9 +401,9 @@ async function cmdMemorySearch(keyword: string): Promise<number> {
 }
 
 async function cmdMemoryReindex(): Promise<number> {
-  const cfg = resolveSearchConfig()
+  const cfg = resolveSearchConfig(void 0, dshHome())
   if (!cfg) {
-    console.error('Error: semantic search not configured. Set DSH_MIND_EMBED_KEY, DSH_MIND_VECTOR_URL and DSH_MIND_VECTOR_KEY.')
+    console.error('Error: semantic search not configured. Set DSH_MIND_EMBED_KEY, DSH_MIND_VECTOR_URL and DSH_MIND_VECTOR_KEY, or write ~/.dsh/memory/.vector-config.json.')
     return 1
   }
   console.log('Reindexing vector store…')

@@ -5,7 +5,7 @@
 
 - 仓库：`github.com/wumihaze/dsh-mind`（public）
 - npm：`@wumihaze/dsh-mind`（public，最新见 `CHANGELOG.md`）
-- 当前版本：0.1.33
+- 当前版本：0.1.34
 - 授权：MIT
 
 ---
@@ -144,7 +144,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | memory-inject | enabled / maxChars | true / 600 | 常驻注入开关/上限 |
 | memory 工具 | budget | 2200 | 便签字符预算 |
 | tool-skill-manage | skillsRoot | ~/.dsh/skills | 技能根目录 |
-| tool-memory | search.{enabled, embedUrl, embedModel, embedApiKey, vectorUrl, vectorApiKey, collection, topK, chunkSize} | 关 | 语义检索；只设 env `DSH_MIND_EMBED_KEY`+`DSH_MIND_VECTOR_URL`+`DSH_MIND_VECTOR_KEY` 即自动启用 |
+| tool-memory | search.{enabled, embedUrl, embedModel, embedApiKey, vectorUrl, vectorApiKey, collection, topK, chunkSize} | 关 | 语义检索；推荐写 `~/.dsh/memory/.vector-config.json`（`embedApiKey`/`vectorUrl`/`vectorApiKey`），或设 env `DSH_MIND_EMBED_KEY`+`DSH_MIND_VECTOR_URL`+`DSH_MIND_VECTOR_KEY`，皆自动启用 |
 
 ## 10. 数据存储（全部 `~/.dsh/`，卸载不删）
 
@@ -155,6 +155,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 │   ├── MEMORY.md                      # 便签（2200 预算）
 │   ├── pinned.json                    # 常驻标记
 │   ├── .vector-index.json             # 语义检索索引清单（启用后生成）
+│   ├── .vector-config.json            # 语义检索凭据（可选，含 API key）
 │   └── *.md                           # 经验库（comfyui/dsh/prefs…）
 ├── skills/
 │   ├── <name>/SKILL.md                # 活动技能
@@ -196,6 +197,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | 0.1.31 | PROJECT.md 项目书 + 文档同步 |
 | 0.1.32 | **语义检索**（SiliconFlow bge-m3 embed + Qdrant 免费向量库，`memory search` 混合，默认关） |
 | 0.1.33 | 修复：Qdrant point ID 必须为 UUID（真实集群验证通过，89 向量可检索） |
+| 0.1.34 | 语义检索凭据支持配置文件 `memory/.vector-config.json`（免环境变量，三入口统一读取） |
 
 ## 12. 开发 / 发布流程
 

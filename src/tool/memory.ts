@@ -83,7 +83,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const root = config.memoryRoot ?? dshHomePath()
   const budget = config.budget ?? DEFAULT_BUDGET
   const path = memoryPath(root)
-  const searchCfg = resolveSearchConfig(config.search)
+  const searchCfg = resolveSearchConfig(config.search, root)
 
   const tool = defineTool({
     name: 'memory',

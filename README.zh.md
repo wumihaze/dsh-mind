@@ -12,7 +12,7 @@
 |---|---|
 | **便签** | agent 的快捷备忘（`MEMORY.md`，2200 字符预算），`memory` 工具 / GUI / CLI / **自动提取** 都能写 |
 | **经验库** | 你按主题整理的 Markdown 文件（`comfyui.md`、`dsh.md`…）自动出现在 GUI，agent 可搜索 |
-| **语义检索**（可选） | `memory search` 升级为混合检索：SiliconFlow bge-m3 把便签/经验库嵌入免费 Qdrant 向量库。默认关——设 `DSH_MIND_EMBED_KEY` / `DSH_MIND_VECTOR_URL` / `DSH_MIND_VECTOR_KEY` 即启用 |
+| **语义检索**（可选） | `memory search` 升级为混合检索：SiliconFlow bge-m3 把便签/经验库嵌入免费 Qdrant 向量库。默认关——写 `~/.dsh/memory/.vector-config.json`（`embedApiKey`/`vectorUrl`/`vectorApiKey`）或设 `DSH_MIND_*` 环境变量即启用 |
 | **技能使用追踪** | 记录技能何时被使用、用了多少次 |
 | **技能治理** | 自动归档过期技能（30 天→stale，90 天→archived），带快照与回滚 |
 | **CLI** | `dsh-mind status / run / archive / restore / memory / install-preset ...` |

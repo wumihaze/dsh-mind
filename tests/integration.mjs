@@ -480,6 +480,35 @@ test('resolveSearchConfig: null when credentials absent', () => {
   }
 })
 
+test('resolveSearchConfig: reads .vector-config.json when env absent', () => {
+  const saved = {
+    e: process.env.DSH_MIND_EMBED_KEY,
+    v: process.env.DSH_MIND_VECTOR_KEY,
+    u: process.env.DSH_MIND_VECTOR_URL,
+  }
+  delete process.env.DSH_MIND_EMBED_KEY
+  delete process.env.DSH_MIND_VECTOR_KEY
+  delete process.env.DSH_MIND_VECTOR_URL
+  const cfgFile = join(HOME, 'memory', '.vector-config.json')
+  writeFileSync(cfgFile, JSON.stringify({
+    embedApiKey: 'file-embed-key',
+    vectorApiKey: 'file-vector-key',
+    vectorUrl: 'https://file.qdrant.test',
+  }), 'utf-8')
+  try {
+    const cfg = resolveSearchConfig(void 0, HOME)
+    assert(cfg !== null, 'expected config to resolve from file')
+    assertEq(cfg.embedApiKey, 'file-embed-key')
+    assertEq(cfg.vectorApiKey, 'file-vector-key')
+    assertEq(cfg.vectorUrl, 'https://file.qdrant.test')
+  } finally {
+    rmSync(cfgFile, { force: true })
+    process.env.DSH_MIND_EMBED_KEY = saved.e
+    process.env.DSH_MIND_VECTOR_KEY = saved.v
+    process.env.DSH_MIND_VECTOR_URL = saved.u
+  }
+})
+
 test('hashOf: stable 16-hex content hash', () => {
   const h = hashOf('hello')
   assertEq(h.length, 16)

@@ -216,7 +216,7 @@ export function mountMindRoutes(host: MindHost): () => void {
         if (req.method === 'GET' && last === 'search') {
           const q = (url.searchParams.get('q') ?? '').trim()
           if (!q) return err(res, 'q is required')
-          const cfg = resolveSearchConfig()
+          const cfg = resolveSearchConfig(void 0, DSH_HOME)
           if (!cfg) return json(res, { semantic: false, entries: [], topics: [] })
           const hits = await semanticSearch(DSH_HOME, q, cfg)
           const list = hits ?? []

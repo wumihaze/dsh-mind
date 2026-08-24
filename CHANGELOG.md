@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.34] - 2026-08-25
+
+### Added
+
+- **Config-file credentials for semantic search**: write
+  `~/.dsh/memory/.vector-config.json` (`embedApiKey` / `vectorApiKey` /
+  `vectorUrl`) and semantic search works on every launch without managing
+  `DSH_MIND_*` env vars. Precedence per field: plugin `search` config → config
+  file → env vars. All three entry points (agent tool, Web route, CLI) read it.
+  Verified: search works with the env vars unset.
+
 ## [0.1.33] - 2026-08-25
 
 ### Fixed

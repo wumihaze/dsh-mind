@@ -2,11 +2,16 @@
  * `search` config resolution.
  *
  * Semantic search needs two cloud credentials (embedding API + vector store).
- * Keys are read from env vars by default (kept out of git) and can be
- * overridden per-plugin via `search` config in the user's own profile patch.
- * Search stays OFF unless both credentials are present (or `enabled: true`
- * forces it on).
+ * Credentials are resolved in order: per-plugin `search` config overrides, then
+ * a local config file `~/.dsh/memory/.vector-config.json`, then env vars
+ * (`DSH_MIND_EMBED_KEY` / `DSH_MIND_VECTOR_URL` / `DSH_MIND_VECTOR_KEY`). The
+ * config file is the convenient way to keep semantic search working without
+ * managing env vars on every launch. Search stays OFF unless credentials are
+ * present (or `enabled: true` forces it on).
  */
+
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 export interface SearchConfig {
   /** Force-enable semantic search even without env credentials. */
@@ -46,12 +51,38 @@ export const DEFAULT_COLLECTION = 'dsh-mind-memory'
 export const DEFAULT_TOP_K = 8
 export const DEFAULT_CHUNK_SIZE = 500
 
-/** Resolve search config from explicit overrides + env. Null when disabled. */
-export function resolveSearchConfig(overrides?: SearchConfig): ResolvedSearchConfig | null {
+/**
+ * Read string fields from `~/.dsh/memory/.vector-config.json` (best-effort;
+ * malformed or missing file → empty map).
+ */
+function fileFields(root?: string): Record<string, string> {
+  if (!root) return {}
+  try {
+    const path = join(root, 'memory', '.vector-config.json')
+    if (!existsSync(path)) return {}
+    const raw = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
+    const out: Record<string, string> = {}
+    for (const [k, v] of Object.entries(raw)) if (typeof v === 'string') out[k] = v
+    return out
+  } catch {
+    return {}
+  }
+}
+
+function first(...values: Array<string | undefined>): string | undefined {
+  return values.find((v): v is string => typeof v === 'string')
+}
+
+/**
+ * Resolve search config. Precedence per field: plugin `search` config →
+ * `.vector-config.json` → env vars. Null when disabled.
+ */
+export function resolveSearchConfig(overrides?: SearchConfig, root?: string): ResolvedSearchConfig | null {
+  const file = fileFields(root)
   const env = process.env
-  const embedApiKey = overrides?.embedApiKey ?? env['DSH_MIND_EMBED_KEY']
-  const vectorApiKey = overrides?.vectorApiKey ?? env['DSH_MIND_VECTOR_KEY']
-  const vectorUrl = overrides?.vectorUrl ?? env['DSH_MIND_VECTOR_URL']
+  const embedApiKey = first(overrides?.embedApiKey, file['embedApiKey'], env['DSH_MIND_EMBED_KEY'])
+  const vectorApiKey = first(overrides?.vectorApiKey, file['vectorApiKey'], env['DSH_MIND_VECTOR_KEY'])
+  const vectorUrl = first(overrides?.vectorUrl, file['vectorUrl'], env['DSH_MIND_VECTOR_URL'])
   const enabled = overrides?.enabled === true || Boolean(embedApiKey && vectorApiKey && vectorUrl)
   if (!enabled || !embedApiKey || !vectorApiKey || !vectorUrl) return null
   return {
@@ -59,11 +90,11 @@ export function resolveSearchConfig(overrides?: SearchConfig): ResolvedSearchCon
     embedApiKey,
     vectorApiKey,
     vectorUrl,
-    embedUrl: overrides?.embedUrl ?? env['DSH_MIND_EMBED_URL'],
-    embedModel: overrides?.embedModel ?? env['DSH_MIND_EMBED_MODEL'],
-    collection: overrides?.collection ?? env['DSH_MIND_COLLECTION'],
-    topK: overrides?.topK ?? numOr(env['DSH_MIND_TOP_K'], DEFAULT_TOP_K),
-    chunkSize: overrides?.chunkSize ?? DEFAULT_CHUNK_SIZE,
+    embedUrl: first(overrides?.embedUrl, file['embedUrl'], env['DSH_MIND_EMBED_URL']),
+    embedModel: first(overrides?.embedModel, file['embedModel'], env['DSH_MIND_EMBED_MODEL']),
+    collection: first(overrides?.collection, file['collection'], env['DSH_MIND_COLLECTION']),
+    topK: overrides?.topK ?? numOr(file['topK'], numOr(env['DSH_MIND_TOP_K'], DEFAULT_TOP_K)),
+    chunkSize: overrides?.chunkSize ?? numOr(file['chunkSize'], DEFAULT_CHUNK_SIZE),
   }
 }
 
