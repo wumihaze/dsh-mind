@@ -10,7 +10,7 @@
 
 | 能力 | 说明 |
 |---|---|
-| **全局记忆** | agent 用自带的 `memory` 工具跨会话记录/回忆短事实（文件存储，2200 字符预算） |
+| **便签** | agent 用 `memory` 工具读写的快捷备忘（`MEMORY.md`，2200 字符预算），GUI/CLI 也能管 |
 | **经验库** | 你按主题整理的 Markdown 文件（`comfyui.md`、`dsh.md`…）自动出现在 GUI，agent 可搜索 |
 | **技能使用追踪** | 记录技能何时被使用、用了多少次 |
 | **技能治理** | 自动归档过期技能（30 天→stale，90 天→archived），带快照与回滚 |
@@ -26,6 +26,20 @@
 | **治理控制台** | **快照管理** |
 | ![治理](./docs/screenshots/curator-panel.png) | ![快照](./docs/screenshots/snapshots-panel.png) |
 
+## 记忆体系（为什么 AGENTS.md ≠ 便签 ≠ 经验库）
+
+agent 有三类知识，别搞混：
+
+| 层 | 文件 | 比喻 | 加载方式 | 谁能写 |
+|---|---|---|---|---|
+| **必背指令** | `~/.dsh/AGENTS.md` | 操作手册 + 笔记本索引 | **每会话自动加载** | 你（静态） |
+| **便签** | `~/.dsh/memory/MEMORY.md` | agent 的快捷备忘（2200 字符预算） | agent 按需读 | agent / 面板 / CLI |
+| **经验库** | `~/.dsh/memory/*.md` | 你整理的主题资料 | 关键词搜索 | 你（维护文档） |
+
+一句话：**AGENTS.md = 一直带着的指令；便签 = agent 自己写的备忘；经验库 = 你要查的详细资料。**
+AGENTS.md 在插件的面板之外——它每个会话自动加载。
+
+
 ## 快速开始
 
 ```bash
@@ -34,7 +48,7 @@ dsh plugin --profile web add @wumihaze/dsh-mind
 
 装完即可用，四类能力：
 
-**1. 记忆** —— agent 跨会话记住东西
+**1. 便签** —— agent 的快捷备忘
 
 ```bash
 dsh-mind memory add "用户偏好简洁回复"
@@ -59,7 +73,7 @@ dsh-mind status                  # 查看治理状态
 
 **4. Web GUI** —— 打开 **设置 → 心智**，面板分两层：
 
-- **全局记忆** —— agent 的快捷备忘，可添加/编辑/删除。
+- **便签** —— agent 的快捷备忘，可添加/编辑/删除。
 - **经验库** —— 你的主题文件，可查看/编辑/删除/新建。
 
 ## 安装
@@ -78,7 +92,7 @@ dsh plugin --profile web add ./dsh-mind
 
 自 **0.1.22** 起，所有能力都注册在 **host 层**，装完 bundle 即对**每个 agent**生效，不需要装预设：
 
-- `memory` 工具（全局记忆 + 经验库检索）
+- `memory` 工具（便签 + 经验库检索）
 - `skill_manage` 工具
 - `memory-nudge`（记忆提醒）和 `memory-guidance`（使用引导）
 - skill-usage 遥测、curator-core 治理、Web GUI 面板
@@ -95,7 +109,7 @@ dsh plugin --profile web add ./dsh-mind
 
 | 工具 | 动作 | 后端存储 |
 |---|---|---|
-| `memory` | `list` / `search` / `add` / `replace` / `remove` | `~/.dsh/memory/MEMORY.md`（全局记忆）+ 搜索 `~/.dsh/memory/*.md`（经验库） |
+| `memory` | `list` / `search` / `add` / `replace` / `remove` | `~/.dsh/memory/MEMORY.md`（便签）+ 搜索 `~/.dsh/memory/*.md`（经验库） |
 | `skill_manage` | `create` / `patch` / `delete` | `~/.dsh/skills/` |
 
 `memory-nudge` 在有值得注意的事后提醒 agent 复习记忆，直到它下一次真正写入记忆（或技能）——写了就停止提醒。
@@ -116,7 +130,7 @@ dsh-mind rollback <id>       # 回滚到指定快照
 dsh-mind prune --days 30     # 清理 N 天前的旧快照
 
 # 记忆管理
-dsh-mind memory add <内容>        # 添加一条全局记忆
+dsh-mind memory add <内容>        # 添加一条便签
 dsh-mind memory search <关键词>   # 搜索记忆
 dsh-mind memory list              # 列出所有记忆
 
@@ -152,7 +166,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 │                                                               │
 │  数据存储（~/.dsh/）                                          │
 │  ┌─────────────────────────────────────────────────────────┐  │
-│  │ memory/（全局记忆 MEMORY.md + 经验库 *.md）  skills/      │  │
+│  │ memory/（便签 MEMORY.md + 经验库 *.md）  skills/      │  │
 │  │ curator/  skill-usage/                                  │  │
 │  └─────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────┘
@@ -167,7 +181,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 | `intervalDays` | 7 | 治理检查间隔（天） |
 | `minIdleMinutes` | 120 | 空闲 N 分钟后触发治理 |
 | `intervalTurns`（nudge） | 8 | 每 N 轮对话提醒复习记忆 |
-| `budget`（memory 工具） | 2200 | 全局记忆字符预算 |
+| `budget`（memory 工具） | 2200 | 便签字符预算 |
 
 **在哪配置**：编辑 profile 的 `cordis.patch.yml` 里的 `config`（curator-core），或预设的 `agent.cordis.yml`（memory-nudge、tool-memory）。
 
@@ -178,7 +192,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 ```
 ~/.dsh/
 ├── memory/                    # 记忆
-│   ├── MEMORY.md              #   全局记忆（快捷备忘，2200 字符预算）
+│   ├── MEMORY.md              #   便签（快捷备忘，2200 字符预算）
 │   ├── comfyui.md             #   经验库（按主题的详细文档，你已有的）
 │   ├── dsh.md                 #   …
 │   └── prefs.md               #   …
@@ -202,8 +216,8 @@ dsh-mind uninstall-preset <name>  # 移除预设
 **数据存在哪？**
 全部在 `~/.dsh/` 本地。无云、无外部服务。记忆就是纯 Markdown，可以直接读改。
 
-**全局记忆和经验库的区别？**
-- **全局记忆**（`memory/MEMORY.md`）：agent 用 `memory` 工具读写的短备忘（2200 字符预算）。GUI 面板、CLI、agent 三方同管。
+**便签和经验库的区别？**
+- **便签**（`memory/MEMORY.md`）：agent 用 `memory` 工具读写的短备忘（2200 字符预算）。GUI 面板、CLI、agent 三方同管。
 - **经验库**（`memory/*.md`）：你按主题整理的详细经验文档。agent 的 `memory search` 和你 `memory-query` 技能都能检索。
 
 **卸载会丢数据吗？**
@@ -213,7 +227,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 Letta 是带服务端记忆的完整 agent 框架。dsh-mind 是轻量 DSH bundle：无服务、无数据库、文件存储，融入现有 DSH agent 而不是替代它。"记忆即文件" vs "记忆即服务"。
 
 **agent 会记住一切吗？**
-全局记忆有 2200 字符预算，agent 会被提醒去精简，保留最有价值的事实。经验库无预算，放你整理的主题文档。
+便签有 2200 字符预算，agent 会被提醒去精简，保留最有价值的事实。经验库无预算，放你整理的主题文档。
 
 **归档的技能会怎样？**
 移到 `~/.dsh/skills/_archived/<name>/`，不再加载进技能列表，随时 `dsh-mind restore <name>` 恢复。

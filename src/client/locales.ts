@@ -25,8 +25,8 @@ export const zh: Record<string, string> = {
 
   // ── Memory ──
   'memory.title': '记忆管理',
-  'memory.desc': '全局记忆（agent 快捷备忘，2200 字符预算）+ 经验库（按主题的详细经验文档）。',
-  'memory.add_placeholder': '添加全局记忆条目…',
+  'memory.desc': '便签（agent 快捷备忘，2200 字符预算）+ 经验库（按主题的详细经验文档）。AGENTS.md（必背指令）始终加载，不在此面板。',
+  'memory.add_placeholder': '添加便签…',
   'memory.add': '添加条目',
   'memory.empty': '暂无记忆条目',
   'memory.remove': '删除',
@@ -38,7 +38,7 @@ export const zh: Record<string, string> = {
   'memory.save': '保存',
   'memory.cancel': '取消',
   'memory.edit_success': '已保存',
-  'memory.quick_section': '全局记忆',
+  'memory.quick_section': '便签（agent 快捷备忘）',
   'memory.topics': '经验库',
   'memory.topic_new': '新建主题',
   'memory.topic_name_placeholder': '主题名（小写字母/数字/连字符，如 dsh-notes）',
@@ -116,8 +116,8 @@ export const en: Record<string, string> = {
 
   // ── Memory ──
   'memory.title': 'Memory Management',
-  'memory.desc': 'Global memory (quick agent notes, 2200-char budget) + experience library (detailed per-topic docs).',
-  'memory.add_placeholder': 'Add a global memory entry…',
+  'memory.desc': 'Sticky notes (agent quick memos, 2200-char budget) + experience library (detailed per-topic docs). AGENTS.md (standing instructions) is always loaded and lives outside this panel.',
+  'memory.add_placeholder': 'Add a sticky note…',
   'memory.add': 'Add entry',
   'memory.empty': 'No memory entries yet',
   'memory.remove': 'Remove',
@@ -129,7 +129,7 @@ export const en: Record<string, string> = {
   'memory.save': 'Save',
   'memory.cancel': 'Cancel',
   'memory.edit_success': 'Saved',
-  'memory.quick_section': 'Global memory',
+  'memory.quick_section': 'Sticky notes (agent quick memos)',
   'memory.topics': 'Experience library',
   'memory.topic_new': 'New topic',
   'memory.topic_name_placeholder': 'Topic name (a-z, 0-9, hyphens, e.g. dsh-notes)',

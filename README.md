@@ -10,7 +10,7 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 
 | Capability | Description |
 |---|---|
-| **Global memory** | The agent records and recalls short facts across sessions (file-based, 2200-char budget) via its own `memory` tool |
+| **Sticky notes** | Agent-facing quick memos (`MEMORY.md`, 2200-char budget), read/written by the agent's `memory` tool, the GUI, and the CLI |
 | **Experience library** | Your per-topic Markdown files (`comfyui.md`, `dsh.md`, …) are surfaced in the GUI and searchable by the agent |
 | **Skill usage tracking** | Tracks which skills are used, when, and how often |
 | **Skill governance** | Auto-archives stale skills (30d → stale, 90d → archived), with snapshots & rollback |
@@ -26,6 +26,21 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 | **Curator console** | **Snapshots** |
 | ![curator](./docs/screenshots/curator-panel.png) | ![snapshots](./docs/screenshots/snapshots-panel.png) |
 
+## Memory tiers (why AGENTS.md ≠ sticky notes ≠ experience library)
+
+The agent has three kinds of knowledge — don't confuse them:
+
+| Tier | File | Analogy | Loaded | Who writes |
+|---|---|---|---|---|
+| **Standing instructions** | `~/.dsh/AGENTS.md` | manual + notebook index | **every session, automatically** | you (static) |
+| **Sticky notes** | `~/.dsh/memory/MEMORY.md` | agent's quick memos (2200-char budget) | agent reads on demand | agent / panel / CLI |
+| **Experience library** | `~/.dsh/memory/*.md` | your curated topic docs | keyword search | you |
+
+One line: **AGENTS.md = always-carried instructions; sticky notes = the agent's own quick
+memos; experience library = docs you look up when needed.** AGENTS.md lives outside this
+plugin's panel — it is loaded into every session automatically.
+
+
 ## Quick Start
 
 ```bash
@@ -34,7 +49,7 @@ dsh plugin --profile web add @wumihaze/dsh-mind
 
 Installed and ready to use. Four capabilities available immediately:
 
-**1. Memory** — your agent remembers across sessions
+**1. Sticky notes** — your agent's quick memos across sessions
 
 ```bash
 dsh-mind memory add "User prefers concise replies"
@@ -62,7 +77,7 @@ dsh-mind status                  # view governance status
 
 **4. Web GUI** — open **设置 → 心智** in DSH Web. The panel has two clear layers:
 
-- **全局记忆** (global memory) — add/edit/delete short agent-facing notes.
+- **便签** (sticky notes) — the agent's quick memos, add/edit/delete.
 - **经验库** (experience library) — view/edit/delete/new your per-topic files.
 
 ## Installation
@@ -84,7 +99,7 @@ dsh plugin --profile web add ./dsh-mind
 Since **0.1.22** every capability is host-plane and applies to **every agent** the
 moment you install the bundle — no preset step needed:
 
-- `memory` tool (global memory + experience-library search)
+- `memory` tool (sticky notes + experience-library search)
 - `skill_manage` tool
 - `memory-nudge` (review reminders) and `memory-guidance` (usage guidance)
 - skill-usage telemetry, curator-core governance, and the Web GUI panel
@@ -106,7 +121,7 @@ Every agent gets these two tools by default:
 
 | Tool | Actions | Backing store |
 |---|---|---|
-| `memory` | `list` / `search` / `add` / `replace` / `remove` | `~/.dsh/memory/MEMORY.md` (全局记忆) + searches `~/.dsh/memory/*.md` (经验库) |
+| `memory` | `list` / `search` / `add` / `replace` / `remove` | `~/.dsh/memory/MEMORY.md` (sticky notes) + searches `~/.dsh/memory/*.md` (experience library) |
 | `skill_manage` | `create` / `patch` / `delete` | `~/.dsh/skills/` |
 
 `memory-nudge` reminds the agent to review its memory after a noteworthy event
@@ -128,7 +143,7 @@ dsh-mind rollback <id>       # Rollback to a specific snapshot
 dsh-mind prune --days 30     # Prune snapshots older than N days
 
 # Memory management
-dsh-mind memory add <text>        # Add a global memory entry
+dsh-mind memory add <text>        # Add a sticky note
 dsh-mind memory search <keyword>  # Search memories
 dsh-mind memory list              # List all memories
 
@@ -164,7 +179,7 @@ Exit codes: `0` = success, `1` = failure, `2` = argument error
 │                                                               │
 │  Data storage (~/.dsh/)                                       │
 │  ┌─────────────────────────────────────────────────────────┐  │
-│  │ memory/ (全局记忆 MEMORY.md + 经验库 *.md)  skills/      │  │
+│  │ memory/ (便签 MEMORY.md + 经验库 *.md)  skills/      │  │
 │  │ curator/  skill-usage/                                  │  │
 │  └─────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────┘
@@ -192,7 +207,7 @@ All data lives under `~/.dsh/`:
 ```
 ~/.dsh/
 ├── memory/                    # Memory
-│   ├── MEMORY.md              #   全局记忆 (quick bullet notes, 2200-char budget)
+│   ├── MEMORY.md              #   便签 (sticky notes, 2200-char budget)
 │   ├── comfyui.md             #   经验库 (per-topic detailed docs, yours already)
 │   ├── dsh.md                 #   …
 │   └── prefs.md               #   …
@@ -216,8 +231,8 @@ Uninstalling the bundle does **not** delete data.
 **Where is my data stored?**
 All data is local under `~/.dsh/`. No cloud, no external service. Memory is plain Markdown you can read and edit directly.
 
-**What is 全局记忆 vs 经验库?**
-- **全局记忆** (`memory/MEMORY.md`): short agent-facing notes the agent reads/writes with its `memory` tool (2200-char budget). Managed in the GUI panel, CLI, and by the agent.
+**What are sticky notes vs the experience library?**
+- **便签** (`memory/MEMORY.md`): short agent-facing memos the agent reads/writes with its `memory` tool (2200-char budget). Managed in the GUI panel, CLI, and by the agent.
 - **经验库** (`memory/*.md`): your per-topic detailed experience documents. Read by the agent's `memory search` and your `memory-query` skill.
 
 **Can I uninstall without losing data?**
@@ -227,7 +242,7 @@ Yes. `dsh plugin remove dsh-mind` removes the bundle but all data files remain i
 Letta is a full agent framework with server-side memory. dsh-mind is a lightweight DSH bundle: no server, no database, file-based storage, and it integrates into your existing DSH agent rather than replacing it. Think of it as "memory as a file" vs "memory as a service".
 
 **Will the agent remember everything?**
-The global memory file has a 2200-character budget. The agent is nudged to review and consolidate memories, so it keeps the most important facts. The experience library has no budget — it holds your curated per-topic docs.
+The sticky-notes file has a 2200-character budget. The agent is nudged to review and consolidate memories, so it keeps the most important facts. The experience library has no budget — it holds your curated per-topic docs.
 
 **What happens to archived skills?**
 Archived skills move to `~/.dsh/skills/_archived/<name>/`. They're no longer loaded into the agent's skill list, but you can restore them anytime with `dsh-mind restore <name>`.

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.25] - 2026-08-25
+
+### Changed
+
+- **Rename 全局记忆 → 便签** (sticky notes): "全局" read like AGENTS.md's global
+  instructions, which misled users. The panel, tool descriptions, and READMEs now
+  call the quick-memo layer 便签, and the README gained a "memory tiers" section
+  (AGENTS.md = standing instructions / 便签 = agent memos / 经验库 = topic docs).
+
 ## [0.1.24] - 2026-08-25
 
 ### Changed
