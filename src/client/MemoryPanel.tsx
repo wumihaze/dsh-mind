@@ -1,0 +1,137 @@
+/**
+ * MemoryPanel: CRUD for persistent memory entries.
+ */
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import styles from './Mind.module.css'
+
+interface MemoryData {
+  entries: string[]
+  totalChars: number
+  budget: number
+}
+
+interface MemoryPanelProps {
+  t: (key: string) => string
+}
+
+/**
+ * Memory management panel: list, add, remove entries.
+ * @param props - Translation function.
+ */
+export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
+  const [data, setData] = useState<MemoryData | null>(null)
+  const [newEntry, setNewEntry] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch('/dsh-mind/memory')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setData(await res.json())
+      setError(null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const add = async () => {
+    const text = newEntry.trim()
+    if (!text) return
+    try {
+      const res = await fetch('/dsh-mind/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const d = await res.json()
+      setData(d)
+      setNewEntry('')
+      setMsg(t('memory.add_success'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const remove = async (idx: number) => {
+    try {
+      const res = await fetch(`/dsh-mind/memory/${idx}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const d = await res.json()
+      setData(d)
+      setMsg(t('memory.remove_success'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const budgetPct = data ? Math.round((data.totalChars / data.budget) * 100) : 0
+
+  return (
+    <div>
+      <h3>{t('memory.title')}</h3>
+      <p className={styles.desc}>{t('memory.desc')}</p>
+
+      {/* Budget indicator */}
+      {data && (
+        <div className={styles.budgetBar}>
+          <div
+            className={budgetPct > 90 ? styles.budgetDanger : styles.budgetFill}
+            style={{ width: `${Math.min(100, budgetPct)}%` }}
+          />
+        </div>
+      )}
+      {data && (
+        <span className={styles.budgetText}>
+          {data.totalChars} / {data.budget} {t('memory.char_count')}
+        </span>
+      )}
+
+      {msg && <div className={styles.toast}>{msg}</div>}
+      {error && <div className={styles.error}>{error}</div>}
+
+      {/* Entry list */}
+      {data && data.entries.length === 0 && (
+        <p className={styles.empty}>{t('memory.empty')}</p>
+      )}
+      {data && data.entries.length > 0 && (
+        <ul className={styles.list}>
+          {data.entries.map((entry, i) => (
+            <li key={i} className={styles.listItem}>
+              <span className={styles.listLabel}>{entry}</span>
+              <button
+                className={styles.btnDanger}
+                onClick={() => void remove(i)}
+                title={t('memory.remove')}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Add form */}
+      <div className={styles.addRow}>
+        <input
+          type="text"
+          className={styles.input}
+          placeholder={t('memory.add_placeholder')}
+          value={newEntry}
+          onChange={(e) => setNewEntry(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void add()
+          }}
+        />
+        <button className={styles.btnPrimary} onClick={() => void add()}>
+          {t('memory.add')}
+        </button>
+      </div>
+    </div>
+  )
+}

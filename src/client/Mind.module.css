@@ -1,0 +1,352 @@
+/* dsh-mind settings panel styles — uses --dsw-* semantic tokens */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  max-width: 720px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dsw-text-primary, inherit);
+  margin: 0;
+}
+
+.desc {
+  font-size: 13px;
+  color: var(--dsw-text-secondary, #888);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.muted {
+  color: var(--dsw-text-secondary, #888);
+  font-size: 12px;
+}
+
+/* ── Status bar ── */
+.statusBar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--dsw-bg-secondary, rgba(128,128,128,0.06));
+  font-size: 12px;
+  color: var(--dsw-text-secondary, #888);
+}
+
+.statusItem {
+  white-space: nowrap;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--dsw-border, rgba(128,128,128,0.15));
+}
+
+.tab,
+.tabActive {
+  padding: 8px 16px;
+  font-size: 13px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--dsw-text-secondary, #888);
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--dsw-text-primary, inherit);
+}
+
+.tabActive {
+  color: var(--dsw-text-primary, inherit);
+  border-bottom-color: var(--dsw-accent, #4a9eff);
+  font-weight: 500;
+}
+
+/* ── Content area ── */
+.content {
+  min-height: 200px;
+}
+
+/* ── Budget bar ── */
+.budgetBar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dsw-bg-tertiary, rgba(128,128,128,0.1));
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.budgetFill {
+  height: 100%;
+  background: var(--dsw-accent, #4a9eff);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.budgetDanger {
+  height: 100%;
+  background: var(--dsw-danger, #e55);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.budgetText {
+  font-size: 11px;
+  color: var(--dsw-text-tertiary, #aaa);
+}
+
+/* ── Lists ── */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.listItem:hover {
+  background: var(--dsw-bg-hover, rgba(128,128,128,0.05));
+}
+
+.listLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.table th {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--dsw-border, rgba(128,128,128,0.15));
+  font-weight: 500;
+  color: var(--dsw-text-secondary, #888);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--dsw-border-light, rgba(128,128,128,0.08));
+}
+
+.num {
+  text-align: right;
+}
+
+.mono {
+  font-family: var(--dsw-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+
+/* ── Buttons ── */
+.btnPrimary,
+.btnSecondary,
+.btnAccent,
+.btnDanger,
+.btnSmall {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btnPrimary {
+  background: var(--dsw-accent, #4a9eff);
+  color: #fff;
+}
+
+.btnSecondary {
+  background: var(--dsw-bg-secondary, rgba(128,128,128,0.1));
+  color: var(--dsw-text-primary, inherit);
+}
+
+.btnAccent {
+  background: var(--dsw-bg-secondary, rgba(128,128,128,0.1));
+  color: var(--dsw-accent, #4a9eff);
+  font-weight: 500;
+}
+
+.btnDanger {
+  background: none;
+  color: var(--dsw-danger, #e55);
+  padding: 2px 8px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.btnSmall {
+  background: var(--dsw-bg-secondary, rgba(128,128,128,0.1));
+  color: var(--dsw-text-primary, inherit);
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.btnPrimary:hover,
+.btnSecondary:hover,
+.btnAccent:hover,
+.btnSmall:hover {
+  opacity: 0.85;
+}
+
+/* ── Input ── */
+.input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--dsw-border, rgba(128,128,128,0.2));
+  border-radius: 4px;
+  background: var(--dsw-bg-input, transparent);
+  color: var(--dsw-text-primary, inherit);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--dsw-accent, #4a9eff);
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ── Status card ── */
+.statusCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: var(--dsw-bg-secondary, rgba(128,128,128,0.05));
+  margin: 8px 0;
+}
+
+.statusRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.statusLabel {
+  color: var(--dsw-text-secondary, #888);
+}
+
+.statusActive {
+  color: var(--dsw-success, #4c4);
+  font-weight: 500;
+}
+
+.statusPaused {
+  color: var(--dsw-warning, #da4);
+  font-weight: 500;
+}
+
+.statusIdle {
+  color: var(--dsw-text-tertiary, #aaa);
+}
+
+/* ── Policy box ── */
+.policyBox {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--dsw-text-tertiary, #aaa);
+  padding: 6px 0;
+}
+
+/* ── Action row ── */
+.actionRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Feedback ── */
+.toast {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: var(--dsw-success-bg, rgba(68,196,68,0.1));
+  color: var(--dsw-success, #4c4);
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.error {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: var(--dsw-danger-bg, rgba(229,68,68,0.1));
+  color: var(--dsw-danger, #e55);
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.empty {
+  color: var(--dsw-text-tertiary, #aaa);
+  font-size: 13px;
+  padding: 16px 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .panel {
+    padding: 12px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .statusBar {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .actionRow {
+    flex-direction: column;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+}

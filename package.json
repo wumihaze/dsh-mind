@@ -34,18 +34,28 @@
       "types": "./lib/types/tool/skill-manage.d.ts",
       "default": "./lib/tool/skill-manage.js"
     },
+    "./web": {
+      "types": "./lib/types/web.d.ts",
+      "default": "./lib/web.js"
+    },
+    "./client": {
+      "default": "./client/client.js"
+    },
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "files": [
     "lib/**/*.js",
     "lib/types/**/*.d.ts",
+    "client/",
     "cordis.patch.yml",
     "presets/"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "clean": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\"",
+    "build": "tsc -p tsconfig.json && tsdown",
+    "build:host": "tsc -p tsconfig.json",
+    "build:client": "tsdown",
+    "clean": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true}); try{require('fs').rmSync('client',{recursive:true,force:true})}catch{}\"",
     "prepublishOnly": "pnpm run build"
   },
   "peerDependencies": {
@@ -59,11 +69,18 @@
     "@deepseek-ai/dsh-system-prompt": "0.1.1-rc.2",
     "@deepseek-ai/dsh-tools": "0.1.1-rc.2",
     "@deepseek-ai/schemastery": "^3.18.0",
+    "clsx": "^2.0.0",
     "yaml": "^2.4.0"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "latest",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.1-rc.2",
     "@types/node": "^22.0.0",
+    "@types/react": "~18.3.1",
+    "lightningcss": "^1.26.0",
+    "react": "^18.3.1",
+    "tsdown": "^0.11.0",
     "typescript": "^5.8.0"
   },
   "publishConfig": {
@@ -76,6 +93,16 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-primitives",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ],
+      "platform": "web"
     }
   },
   "engines": {

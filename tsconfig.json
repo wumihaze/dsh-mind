@@ -11,6 +11,7 @@
     "declarationDir": "lib/types",
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "jsx": "react-jsx",
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
     "strict": true,

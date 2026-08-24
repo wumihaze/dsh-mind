@@ -22,3 +22,8 @@
         archiveAfterDays: 90
         intervalDays: 7
         minIdleMinutes: 120
+
+    # ── Web GUI HTTP routes (function plugin) ──────────────────────────
+
+    - id: dsh-mind-web
+      name: '@wumihaze/dsh-mind/web'
