@@ -209,16 +209,17 @@ export function mountMindRoutes(host: MindHost): () => void {
         const idx = Number(last)
 
         // POST /dsh-mind/memory/<idx>/pin — toggle 常驻 (always-inject) flag
-        if (req.method === 'POST' && last !== 'pin') {
-          if (!Number.isInteger(idx) || idx < 0) return err(res, 'invalid index')
+        if (req.method === 'POST') {
+          if (last !== 'pin') return err(res, 'method not allowed', 405)
+          const pinIdx = Number(parts[parts.length - 2])
+          if (!Number.isInteger(pinIdx) || pinIdx < 0) return err(res, 'invalid index')
           const entries = await readMemory()
-          if (idx >= entries.length) return err(res, 'index out of range', 404)
-          const pinned = togglePin(DSH_HOME, entries, idx).pinned
+          if (pinIdx >= entries.length) return err(res, 'index out of range', 404)
+          const pinned = togglePin(DSH_HOME, entries, pinIdx).pinned
           const topics = await listMemoryTopics()
           json(res, { entries, topics, pinned, totalChars: entries.join('\n').length, budget: 2200 })
           return
         }
-        if (req.method === 'POST' && last === 'pin') return err(res, 'invalid index')
 
         if (!Number.isInteger(idx) || idx < 0) return err(res, 'invalid index')
 
