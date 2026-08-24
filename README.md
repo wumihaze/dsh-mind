@@ -32,7 +32,7 @@ A DSH bundle that adds **cross-session memory** and **skill lifecycle management
 dsh plugin --profile web add @wumihaze/dsh-mind
 ```
 
-Installed and ready to use. Three capabilities available immediately:
+Installed and ready to use. Four capabilities available immediately:
 
 **1. Memory** — your agent remembers across sessions
 
@@ -151,7 +151,7 @@ Exit codes: `0` = success, `1` = failure, `2` = argument error
 │  │ (tracking)   │  │ (governance) │  │ (GUI routes)  │        │
 │  └──────────────┘  └──────────────┘  └───────────────┘        │
 │                                                               │
-│  Agent-plane (preset registers)                               │
+│  Agent capabilities (host-plane, enabled by default)                               │
 │  ┌───────────┐  ┌───────────────┐  ┌───────────┐  ┌────────┐ │
 │  │ memory-   │  │ memory-       │  │ memory    │  │ skill- │ │
 │  │ nudge     │  │ guidance      │  │ tool      │  │ manage │ │

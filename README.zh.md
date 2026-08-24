@@ -139,7 +139,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 │  │ (追踪)       │  │ (治理)       │  │ (GUI 路由)    │        │
 │  └──────────────┘  └──────────────┘  └───────────────┘        │
 │                                                               │
-│  Agent 层（预设注册）                                          │
+│  Agent 能力（host 层，默认开启）                                          │
 │  ┌───────────┐  ┌───────────────┐  ┌───────────┐  ┌────────┐ │
 │  │ memory-   │  │ memory-       │  │ memory    │  │ skill- │ │
 │  │ nudge     │  │ guidance      │  │ tool      │  │ manage │ │
