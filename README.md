@@ -41,7 +41,7 @@ One line: **AGENTS.md = always-carried instructions; sticky notes = the agent's 
 memos; experience library = docs you look up when needed.** AGENTS.md lives outside this
 plugin's panel — it is loaded into every session automatically.
 
-**Pinned (常驻) sticky notes**: pin a note with 📌 in the panel and it is injected
+**Pinned sticky notes**: pin a note with 📌 in the panel and it is injected
 into the prompt every turn — key facts (your language, signing identity, hard
 conventions) are always present without a tool call. Nothing pinned → nothing
 injected. Pins live in `~/.dsh/memory/pinned.json`.
@@ -49,7 +49,7 @@ injected. Pins live in `~/.dsh/memory/pinned.json`.
 ## Semantic search (optional)
 
 `memory search` can go beyond keyword matching and find notes by *meaning* —
-searching "电脑" can surface a note about a laptop. It embeds sticky notes +
+searching "computer" can surface a note about a laptop. It embeds sticky notes +
 experience library via **SiliconFlow** (`BAAI/bge-m3`, free tier) and stores the
 vectors in a free **Qdrant Cloud** cluster. **Off by default**; nothing changes
 until you enable it.
@@ -113,10 +113,10 @@ dsh-mind restore code-review     # restore an archived skill
 dsh-mind status                  # view governance status
 ```
 
-**4. Web GUI** — open **设置 → 心智** in DSH Web. The panel has two clear layers:
+**4. Web GUI** — open **Settings → Mind** in DSH Web. The panel has two clear layers:
 
-- **便签** (sticky notes) — the agent's quick memos, add/edit/delete.
-- **经验库** (experience library) — view/edit/delete/new your per-topic files.
+- **Sticky notes** — the agent's quick memos, add/edit/delete.
+- **Experience library** — view/edit/delete/new your per-topic files.
 
 ## Installation
 
@@ -218,7 +218,7 @@ Exit codes: `0` = success, `1` = failure, `2` = argument error
 │                                                               │
 │  Data storage (~/.dsh/)                                       │
 │  ┌─────────────────────────────────────────────────────────┐  │
-│  │ memory/ (便签 MEMORY.md + 经验库 *.md)  skills/      │  │
+│  │ memory/ (sticky notes + experience library)  skills/  │  │
 │  │ curator/  skill-usage/                                  │  │
 │  └─────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────┘
@@ -247,8 +247,8 @@ All data lives under `~/.dsh/`:
 ```
 ~/.dsh/
 ├── memory/                    # Memory
-│   ├── MEMORY.md              #   便签 (sticky notes, 2200-char budget)
-│   ├── comfyui.md             #   经验库 (per-topic detailed docs, yours already)
+│   ├── MEMORY.md              #   sticky notes (2200-char budget)
+│   ├── comfyui.md             #   experience library (per-topic detailed docs, yours already)
 │   ├── dsh.md                 #   …
 │   ├── prefs.md               #   …
 │   ├── .vector-index.json     #   semantic-search index manifest (when enabled)
@@ -274,8 +274,8 @@ Uninstalling the bundle does **not** delete data.
 All data is local under `~/.dsh/` — memory is plain Markdown you can read and edit directly. The only optional external service is **semantic search** (off by default); when enabled it sends text embeddings to SiliconFlow and vectors to Qdrant Cloud, both free tiers.
 
 **What are sticky notes vs the experience library?**
-- **便签** (`memory/MEMORY.md`): short agent-facing memos the agent reads/writes with its `memory` tool (2200-char budget). Managed in the GUI panel, CLI, and by the agent.
-- **经验库** (`memory/*.md`): your per-topic detailed experience documents. Read by the agent's `memory search` and your `memory-query` skill.
+- **Sticky notes** (`memory/MEMORY.md`): short agent-facing memos the agent reads/writes with its `memory` tool (2200-char budget). Managed in the GUI panel, CLI, and by the agent.
+- **Experience library** (`memory/*.md`): your per-topic detailed experience documents. Read by the agent's `memory search` and your `memory-query` skill.
 
 **Can I uninstall without losing data?**
 Yes. `dsh plugin remove dsh-mind` removes the bundle but all data files remain in `~/.dsh/`. Reinstall to pick up where you left off.

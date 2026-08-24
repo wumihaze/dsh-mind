@@ -5,7 +5,7 @@
 
 - 仓库：`github.com/wumihaze/dsh-mind`（public）
 - npm：`@wumihaze/dsh-mind`（public，最新见 `CHANGELOG.md`）
-- 当前版本：0.1.35
+- 当前版本：0.1.36
 - 授权：MIT
 
 ---
@@ -199,6 +199,7 @@ POST /dsh-mind/curator/* | /snapshots/*      # 治理/快照
 | 0.1.33 | 修复：Qdrant point ID 必须为 UUID（真实集群验证通过，89 向量可检索） |
 | 0.1.34 | 语义检索凭据支持配置文件 `memory/.vector-config.json`（免环境变量，三入口统一读取） |
 | 0.1.35 | README（中英）补语义检索功能说明 + `memory reindex` + 数据文件 |
+| 0.1.36 | 英文 README 全部中文化清理（便签/经验库/常驻→英文），仓库已设为 public |
 
 ## 12. 开发 / 发布流程
 

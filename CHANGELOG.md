@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.36] - 2026-08-25
+
+### Changed
+
+- **Docs**: English README is now entirely English — replaced the leftover
+  Chinese terms (便签 / 经验库 / 常驻 / 设置→心智 UI path) with their English
+  equivalents, keeping only the 「中文文档」 link to the Chinese version.
+
 ## [0.1.35] - 2026-08-25
 
 ### Changed
