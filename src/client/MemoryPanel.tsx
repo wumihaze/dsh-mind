@@ -23,6 +23,8 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
   const [newEntry, setNewEntry] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
+  const [editingIdx, setEditingIdx] = useState<number | null>(null)
+  const [editText, setEditText] = useState('')
 
   const load = useCallback(async () => {
     try {
@@ -70,6 +72,30 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
     }
   }
 
+  const startEdit = (idx: number, text: string) => {
+    setEditingIdx(idx)
+    setEditText(text)
+  }
+
+  const saveEdit = async (idx: number) => {
+    const text = editText.trim()
+    if (!text) return
+    try {
+      const res = await fetch(`/dsh-mind/memory/${idx}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const d = await res.json()
+      setData(d)
+      setEditingIdx(null)
+      setMsg(t('memory.edit_success'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   const budgetPct = data ? Math.round((data.totalChars / data.budget) * 100) : 0
 
   return (
@@ -103,14 +129,45 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
         <ul className={styles.list}>
           {data.entries.map((entry, i) => (
             <li key={i} className={styles.listItem}>
-              <span className={styles.listLabel}>{entry}</span>
-              <button
-                className={styles.btnDanger}
-                onClick={() => void remove(i)}
-                title={t('memory.remove')}
-              >
-                ×
-              </button>
+              {editingIdx === i ? (
+                <div className={styles.addRow}>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void saveEdit(i)
+                      if (e.key === 'Escape') setEditingIdx(null)
+                    }}
+                    autoFocus
+                  />
+                  <button className={styles.btnPrimary} onClick={() => void saveEdit(i)}>
+                    {t('memory.save')}
+                  </button>
+                  <button className={styles.btnSecondary} onClick={() => setEditingIdx(null)}>
+                    {t('memory.cancel')}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className={styles.listLabel}>{entry}</span>
+                  <button
+                    className={styles.btnSmall}
+                    onClick={() => startEdit(i, entry)}
+                    title={t('memory.edit')}
+                  >
+                    {t('memory.edit')}
+                  </button>
+                  <button
+                    className={styles.btnDanger}
+                    onClick={() => void remove(i)}
+                    title={t('memory.remove')}
+                  >
+                    ×
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>

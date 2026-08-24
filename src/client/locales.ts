@@ -34,6 +34,10 @@ export const zh: Record<string, string> = {
   'memory.add_success': '已添加记忆',
   'memory.add_error': '添加失败',
   'memory.remove_success': '已删除',
+  'memory.edit': '编辑',
+  'memory.save': '保存',
+  'memory.cancel': '取消',
+  'memory.edit_success': '已保存',
 
   // ── Skills ──
   'skills.title': '技能仪表盘',
@@ -111,6 +115,10 @@ export const en: Record<string, string> = {
   'memory.add_success': 'Memory added',
   'memory.add_error': 'Failed to add',
   'memory.remove_success': 'Removed',
+  'memory.edit': 'Edit',
+  'memory.save': 'Save',
+  'memory.cancel': 'Cancel',
+  'memory.edit_success': 'Saved',
 
   // ── Skills ──
   'skills.title': 'Skill Dashboard',

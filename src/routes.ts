@@ -49,11 +49,11 @@ async function readMemory(): Promise<string[]> {
     .map((l) => l.slice(2))
 }
 
-/** Write memory entries back to MEMORY.md. */
+/** Write memory entries back to MEMORY.md (with the `# Memory` header, matching the agent memory tool). */
 async function writeMemory(entries: string[]): Promise<void> {
   const dir = join(DSH_HOME, 'memory')
   if (!existsSync(dir)) await mkdir(dir, { recursive: true })
-  const content = entries.map((e) => `- ${e}`).join('\n') + (entries.length > 0 ? '\n' : '')
+  const content = '# Memory\n' + entries.map((e) => `- ${e}`).join('\n') + (entries.length > 0 ? '\n' : '')
   await writeFile(MEMORY_FILE, content, 'utf-8')
 }
 
@@ -178,17 +178,34 @@ export function mountMindRoutes(host: MindHost): () => void {
       // a doubled `//` and never match. Paths are `/dsh-mind/memory/<idx>`.
       path: '/dsh-mind/memory',
       handler: async (req: IncomingMessage, res: ServerResponse) => {
-        if (req.method !== 'DELETE') return err(res, 'method not allowed', 405)
         const url = new URL(req.url ?? '', 'http://localhost')
         const parts = url.pathname.split('/')
         const idxStr = parts[parts.length - 1]
         const idx = Number(idxStr)
         if (!Number.isInteger(idx) || idx < 0) return err(res, 'invalid index')
-        const entries = await readMemory()
-        if (idx >= entries.length) return err(res, 'index out of range', 404)
-        entries.splice(idx, 1)
-        await writeMemory(entries)
-        json(res, { entries, totalChars: entries.join('\n').length })
+
+        if (req.method === 'DELETE') {
+          const entries = await readMemory()
+          if (idx >= entries.length) return err(res, 'index out of range', 404)
+          entries.splice(idx, 1)
+          await writeMemory(entries)
+          json(res, { entries, totalChars: entries.join('\n').length })
+          return
+        }
+
+        if (req.method === 'PATCH') {
+          const body = await readBody(req)
+          const text = typeof body.text === 'string' ? body.text.trim() : ''
+          if (!text) return err(res, 'text is required')
+          const entries = await readMemory()
+          if (idx >= entries.length) return err(res, 'index out of range', 404)
+          entries[idx] = text
+          await writeMemory(entries)
+          json(res, { entries, totalChars: entries.join('\n').length })
+          return
+        }
+
+        return err(res, 'method not allowed', 405)
       },
     }),
   )
