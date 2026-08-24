@@ -1,7 +1,7 @@
 {
   "name": "@wumihaze/dsh-mind",
   "description": "Give your DSH agent a mind: persistent memory + self-curating skills",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
@@ -21,6 +21,10 @@
     "./memory/guidance": {
       "types": "./lib/types/memory/guidance.d.ts",
       "default": "./lib/memory/guidance.js"
+    },
+    "./memory/auto": {
+      "types": "./lib/types/memory/auto.d.ts",
+      "default": "./lib/memory/auto.js"
     },
     "./skill-usage": {
       "types": "./lib/types/skill-usage/index.d.ts",

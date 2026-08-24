@@ -51,6 +51,12 @@
     - id: memory-guidance
       name: '@wumihaze/dsh-mind/memory/guidance'
 
+    - id: memory-auto
+      name: '@wumihaze/dsh-mind/memory/auto'
+      config:
+        intervalTurns: 10
+        debounceMs: 90000
+
     - id: tool-memory
       name: '@wumihaze/dsh-mind/tool/memory'
 
