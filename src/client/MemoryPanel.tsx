@@ -232,7 +232,77 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
         </div>
       )}
 
-      {/* Topic memory files (from ~/.dsh/memory/*.md) */}
+      {/* 长期偏好 — quick memory: add form first, then entries */}
+      <div className={styles.topicSection}>
+        <h4 className={styles.topicTitle}>{t('memory.quick_section')}</h4>
+        <div className={styles.addRow}>
+          <input
+            type="text"
+            className={styles.input}
+            placeholder={t('memory.add_placeholder')}
+            value={newEntry}
+            onChange={(e) => setNewEntry(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void add()
+            }}
+          />
+          <button className={styles.btnPrimary} onClick={() => void add()}>
+            {t('memory.add')}
+          </button>
+        </div>
+        {data && data.entries.length === 0 && (
+          <p className={styles.empty}>{t('memory.empty')}</p>
+        )}
+        {data && data.entries.length > 0 && (
+          <ul className={styles.list}>
+            {data.entries.map((entry, i) => (
+              <li key={i} className={styles.listItem}>
+                {editingIdx === i ? (
+                  <div className={styles.addRow}>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') void saveEdit(i)
+                        if (e.key === 'Escape') setEditingIdx(null)
+                      }}
+                      autoFocus
+                    />
+                    <button className={styles.btnPrimary} onClick={() => void saveEdit(i)}>
+                      {t('memory.save')}
+                    </button>
+                    <button className={styles.btnSecondary} onClick={() => setEditingIdx(null)}>
+                      {t('memory.cancel')}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className={styles.listLabel}>{entry}</span>
+                    <button
+                      className={styles.btnSmall}
+                      onClick={() => startEdit(i, entry)}
+                      title={t('memory.edit')}
+                    >
+                      {t('memory.edit')}
+                    </button>
+                    <button
+                      className={styles.btnDanger}
+                      onClick={() => void remove(i)}
+                      title={t('memory.remove')}
+                    >
+                      ×
+                    </button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* 记忆库 — per-topic memory files */}
       {(data && data.topics.length > 0) || creatingTopic ? (
         <div className={styles.topicSection}>
           <h4 className={styles.topicTitle}>
@@ -289,75 +359,6 @@ export function MemoryPanel({ t }: MemoryPanelProps): ReactNode {
           </ul>
         </div>
       ) : null}
-
-      {/* Entry list */}
-      {data && data.entries.length === 0 && (
-        <p className={styles.empty}>{t('memory.empty')}</p>
-      )}
-      {data && data.entries.length > 0 && (
-        <ul className={styles.list}>
-          {data.entries.map((entry, i) => (
-            <li key={i} className={styles.listItem}>
-              {editingIdx === i ? (
-                <div className={styles.addRow}>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') void saveEdit(i)
-                      if (e.key === 'Escape') setEditingIdx(null)
-                    }}
-                    autoFocus
-                  />
-                  <button className={styles.btnPrimary} onClick={() => void saveEdit(i)}>
-                    {t('memory.save')}
-                  </button>
-                  <button className={styles.btnSecondary} onClick={() => setEditingIdx(null)}>
-                    {t('memory.cancel')}
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <span className={styles.listLabel}>{entry}</span>
-                  <button
-                    className={styles.btnSmall}
-                    onClick={() => startEdit(i, entry)}
-                    title={t('memory.edit')}
-                  >
-                    {t('memory.edit')}
-                  </button>
-                  <button
-                    className={styles.btnDanger}
-                    onClick={() => void remove(i)}
-                    title={t('memory.remove')}
-                  >
-                    ×
-                  </button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Add form */}
-      <div className={styles.addRow}>
-        <input
-          type="text"
-          className={styles.input}
-          placeholder={t('memory.add_placeholder')}
-          value={newEntry}
-          onChange={(e) => setNewEntry(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') void add()
-          }}
-        />
-        <button className={styles.btnPrimary} onClick={() => void add()}>
-          {t('memory.add')}
-        </button>
-      </div>
     </div>
   )
 }

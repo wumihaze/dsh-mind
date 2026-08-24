@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.19] - 2026-08-25
+
+### Changed
+
+- **Memory panel layout & naming**: the quick memory add form moved to the top
+  (was at the bottom, easy to miss) and the two stores are now clearly labelled —
+  **全局记忆** (global memory: agent-facing quick entries, `MEMORY.md`) and
+  **主题记忆** (topic memory: per-topic files). Add button = 添加条目, New topic
+  = 新建主题.
+
 ## [0.1.18] - 2026-08-25
 
 ### Fixed
