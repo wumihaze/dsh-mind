@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.35] - 2026-08-25
+
+### Changed
+
+- **Docs**: README (en/zh) now document semantic search — a dedicated "Semantic
+  search (optional)" section (feature description, enable/disable via
+  `.vector-config.json`, `memory reindex`), CLI `memory reindex`, the two hidden
+  data files, the `search` config row, and the FAQ no-longer claims "no external
+  service" (semantic search is the optional free-tier exception, off by default).
+
 ## [0.1.34] - 2026-08-25
 
 ### Added

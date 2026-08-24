@@ -42,6 +42,29 @@ AGENTS.md 在插件的面板之外——它每个会话自动加载。
 
 **常驻便签**：在面板里用 📌 钉住一条便签，它就会**每轮注入提示词**——关键事实（你的语言偏好、署名、硬性约定）不用调工具就始终在场。没钉 → 不注入。钉住状态存在 `~/.dsh/memory/pinned.json`。
 
+## 语义检索（可选，功能说明）
+
+`memory search` 能超出关键词匹配，**按意思**找到记忆——搜"电脑"能命中一条关于"联想笔记本"的便签。做法：便签 + 经验库经 **SiliconFlow**（`BAAI/bge-m3`，免费档）向量化，向量存免费 **Qdrant Cloud** 集群。**默认关闭**，启用前行为完全不变。
+
+**启用** —— 写 `~/.dsh/memory/.vector-config.json`：
+
+```json
+{
+  "embedApiKey": "sk-...",
+  "vectorUrl": "https://<你的集群>.qdrant.io",
+  "vectorApiKey": "<集群 api key>"
+}
+```
+
+（`DSH_MIND_EMBED_KEY` / `DSH_MIND_VECTOR_URL` / `DSH_MIND_VECTOR_KEY` 环境变量同样可用。逐字段优先级：插件 `search` 配置 → 配置文件 → 环境变量。）
+
+然后重建一次索引：
+
+```bash
+dsh-mind memory reindex
+```
+
+之后记忆每次变化自动增量同步。**关闭**：删掉配置文件，重启 DSH Web。**隐私**：只有向量 + 内容 hash ID 离开本机——正文在查询后回本地取。Web GUI 侧也暴露为 `GET /dsh-mind/memory/search?q=`。
 
 ## 快速开始
 
@@ -134,8 +157,9 @@ dsh-mind prune --days 30     # 清理 N 天前的旧快照
 
 # 记忆管理
 dsh-mind memory add <内容>        # 添加一条便签
-dsh-mind memory search <关键词>   # 搜索记忆
+dsh-mind memory search <关键词>   # 搜索记忆（配置后关键词+语义混合）
 dsh-mind memory list              # 列出所有记忆
+dsh-mind memory reindex           # 重建语义向量索引
 
 # 预设管理
 dsh-mind install-preset [name]    # 安装预设（不带名字：列出可用）
@@ -185,6 +209,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 | `minIdleMinutes` | 120 | 空闲 N 分钟后触发治理 |
 | `intervalTurns`（nudge） | 8 | 每 N 轮对话提醒复习记忆 |
 | `budget`（memory 工具） | 2200 | 便签字符预算 |
+| `search`（tool-memory） | 关 | 语义检索配置；也可读 `~/.dsh/memory/.vector-config.json` 或 `DSH_MIND_*` 环境变量 |
 
 **在哪配置**：编辑 profile 的 `cordis.patch.yml` 里的 `config`（curator-core），或预设的 `agent.cordis.yml`（memory-nudge、tool-memory）。
 
@@ -198,7 +223,9 @@ dsh-mind uninstall-preset <name>  # 移除预设
 │   ├── MEMORY.md              #   便签（快捷备忘，2200 字符预算）
 │   ├── comfyui.md             #   经验库（按主题的详细文档，你已有的）
 │   ├── dsh.md                 #   …
-│   └── prefs.md               #   …
+│   ├── prefs.md               #   …
+│   ├── .vector-index.json     #   语义检索索引清单（启用后生成）
+│   └── .vector-config.json    #   语义检索凭据（可选，含 API key）
 ├── skills/                    # 活动技能
 │   └── <name>/SKILL.md
 ├── skills/_archived/          # 已归档技能
@@ -217,7 +244,7 @@ dsh-mind uninstall-preset <name>  # 移除预设
 ## FAQ
 
 **数据存在哪？**
-全部在 `~/.dsh/` 本地。无云、无外部服务。记忆就是纯 Markdown，可以直接读改。
+全部在 `~/.dsh/` 本地——记忆就是纯 Markdown，可以直接读改。唯一可选的外部服务是**语义检索**（默认关）；启用后它把文本向量发送到 SiliconFlow、向量存到 Qdrant Cloud，两者都是免费档。
 
 **便签和经验库的区别？**
 - **便签**（`memory/MEMORY.md`）：agent 用 `memory` 工具读写的短备忘（2200 字符预算）。GUI 面板、CLI、agent 三方同管。

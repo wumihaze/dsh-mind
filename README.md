@@ -46,6 +46,38 @@ into the prompt every turn — key facts (your language, signing identity, hard
 conventions) are always present without a tool call. Nothing pinned → nothing
 injected. Pins live in `~/.dsh/memory/pinned.json`.
 
+## Semantic search (optional)
+
+`memory search` can go beyond keyword matching and find notes by *meaning* —
+searching "电脑" can surface a note about a laptop. It embeds sticky notes +
+experience library via **SiliconFlow** (`BAAI/bge-m3`, free tier) and stores the
+vectors in a free **Qdrant Cloud** cluster. **Off by default**; nothing changes
+until you enable it.
+
+**Enable** — write `~/.dsh/memory/.vector-config.json`:
+
+```json
+{
+  "embedApiKey": "sk-...",
+  "vectorUrl": "https://<your-cluster>.qdrant.io",
+  "vectorApiKey": "<cluster api key>"
+}
+```
+
+(The `DSH_MIND_EMBED_KEY` / `DSH_MIND_VECTOR_URL` / `DSH_MIND_VECTOR_KEY` env
+vars are also honored. Per-field precedence: plugin `search` config → config
+file → env vars.)
+
+Then rebuild the index once:
+
+```bash
+dsh-mind memory reindex
+```
+
+After that the index syncs automatically whenever memory changes. **Disable** by
+deleting the config file and restarting DSH Web. **Privacy**: only vectors +
+content-hash ids leave the machine — note text is looked up back locally after
+a query. Also exposed as `GET /dsh-mind/memory/search?q=` on the Web GUI.
 
 ## Quick Start
 
@@ -150,8 +182,9 @@ dsh-mind prune --days 30     # Prune snapshots older than N days
 
 # Memory management
 dsh-mind memory add <text>        # Add a sticky note
-dsh-mind memory search <keyword>  # Search memories
+dsh-mind memory search <keyword>  # Search memories (keyword + semantic when configured)
 dsh-mind memory list              # List all memories
+dsh-mind memory reindex           # Rebuild the semantic vector index
 
 # Preset management
 dsh-mind install-preset [name]    # Install preset (without name: list available)
@@ -201,6 +234,7 @@ Exit codes: `0` = success, `1` = failure, `2` = argument error
 | `minIdleMinutes` | 120 | Trigger curation after N minutes idle |
 | `intervalTurns` (nudge) | 8 | Remind memory review every N conversation turns |
 | `budget` (memory tool) | 2200 | Global memory character budget |
+| `search` (tool-memory) | off | Semantic search config; also read from `~/.dsh/memory/.vector-config.json` or `DSH_MIND_*` env vars |
 
 **Where to configure**: Edit the `config` block in your profile's `cordis.patch.yml`
 (for `curator-core`) or the preset's `agent.cordis.yml` (for `memory-nudge`,
@@ -216,7 +250,9 @@ All data lives under `~/.dsh/`:
 │   ├── MEMORY.md              #   便签 (sticky notes, 2200-char budget)
 │   ├── comfyui.md             #   经验库 (per-topic detailed docs, yours already)
 │   ├── dsh.md                 #   …
-│   └── prefs.md               #   …
+│   ├── prefs.md               #   …
+│   ├── .vector-index.json     #   semantic-search index manifest (when enabled)
+│   └── .vector-config.json    #   semantic-search credentials (when enabled)
 ├── skills/                    # Active skills
 │   └── <name>/SKILL.md
 ├── skills/_archived/          # Archived skills
@@ -235,7 +271,7 @@ Uninstalling the bundle does **not** delete data.
 ## FAQ
 
 **Where is my data stored?**
-All data is local under `~/.dsh/`. No cloud, no external service. Memory is plain Markdown you can read and edit directly.
+All data is local under `~/.dsh/` — memory is plain Markdown you can read and edit directly. The only optional external service is **semantic search** (off by default); when enabled it sends text embeddings to SiliconFlow and vectors to Qdrant Cloud, both free tiers.
 
 **What are sticky notes vs the experience library?**
 - **便签** (`memory/MEMORY.md`): short agent-facing memos the agent reads/writes with its `memory` tool (2200-char budget). Managed in the GUI panel, CLI, and by the agent.
