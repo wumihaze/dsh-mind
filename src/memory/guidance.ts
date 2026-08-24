@@ -51,7 +51,7 @@ const GUIDANCE_TEXT = [
  * @param ctx - Cordis context.
  * @param config - resolved plugin config.
  */
-export function apply(ctx: Context, config: Config): void {
+export function apply(ctx: Context, config: Config = {}): void {
   if (config.enabled === false) return
   ctx.effect(() => ctx.systemPrompt.section({
     name: SKILL_GUIDANCE_SECTION,

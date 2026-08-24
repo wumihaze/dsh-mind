@@ -1,8 +1,8 @@
 /**
  * Periodic memory-review nudge. While a noteworthy event (a user message or a
- * failed tool call) has happened since the agent's last memory write, it
- * reminds the model to review its memory every `intervalTurns` assistant
- * steps.
+ * failed tool call) has happened since the agent last updated its skill library
+ * (a `skill_manage` create/patch — the persistent "memory" of this bundle), it
+ * reminds the model to review its memory every `intervalTurns` assistant steps.
  * @module @wumihaze/dsh-mind/memory/nudge
  */
 
@@ -36,10 +36,10 @@ export const Config: z<Config> = z.object({
 const PLUGIN_SOURCE: MessageSource = { kind: 'plugin', plugin: 'memory-review-nudge' }
 
 export const NUDGE_TEXT =
-  'Memory review reminder: since your last memory write, something noteworthy happened — '
+  'Memory review reminder: since you last updated your skill library, something noteworthy happened — '
   + 'a user correction, a new fact about the environment, or a resolved error. '
-  + 'Review what has happened and update your memory entries if warranted: add, replace, '
-  + 'or remove. If nothing is worth persisting, continue without writing.'
+  + 'Review what has happened and update your skill library if warranted via the skill_manage tool '
+  + '(create a new skill or patch an existing one). If nothing is worth persisting, continue without writing.'
 
 interface State {
   turnsSinceWrite: number
@@ -47,10 +47,10 @@ interface State {
   lastNudgeTurn: number
 }
 
-function isMemoryWrite(args: unknown): boolean {
+function isSkillWrite(args: unknown): boolean {
   if (typeof args !== 'object' || args === null) return false
   const action = (args as Record<string, unknown>).action
-  return action === 'add' || action === 'replace' || action === 'remove'
+  return action === 'create' || action === 'patch'
 }
 
 /**
@@ -102,7 +102,7 @@ export function apply(ctx: Context, config: Config): void {
       const downstream = await next()
       if (exec.agent !== undefined) {
         const s = state(exec.agent)
-        if (exec.name === 'memory' && isMemoryWrite(exec.arguments) && result.isError === false) {
+        if (exec.name === 'skill_manage' && isSkillWrite(exec.arguments) && result.isError === false) {
           s.turnsSinceWrite = 0
           s.signal = false
           s.lastNudgeTurn = 0

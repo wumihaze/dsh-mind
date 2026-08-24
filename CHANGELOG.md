@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-08-25
+
+### Fixed
+
+- **`memory-nudge` never reset and would nag forever**: it watched a `memory`
+  tool (add/replace/remove) that this bundle does not ship, so its "memory
+  write" signal never cleared and the review reminder fired every
+  `intervalTurns` steps indefinitely. It now watches `skill_manage`
+  create/patch — the skill library is this bundle's persistent memory — so a
+  real write clears the signal. Nudge text updated to point at `skill_manage`.
+- **`memory-guidance` crashed with no config**: `apply(ctx, config)` read
+  `config.enabled` but had no runtime Config schema and no default, so mounting
+  the row without a `config:` block threw `Cannot read properties of undefined
+  (reading 'enabled')`. Defaulted `config = {}`.
+
 ## [0.1.4] - 2026-08-25
 
 ### Fixed
