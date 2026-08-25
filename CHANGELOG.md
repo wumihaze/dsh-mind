@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-25
+
+### Added
+
+- **Auto-archive of sticky-note overflow** (`memory/archive`): when adding
+  entries would exceed the 2200-char sticky-note budget, older notes are now
+  moved into per-topic files (`<topic>.md`) instead of the write being rejected.
+  - Keyword-routed to the matching topic file (`llama`/`pdf`/`dsh`/`env`/…,
+    longest keyword wins), with a `misc` fallback for unmatched entries; created
+    topic files get a `- <topic> 经验 → memory/<topic>.md` pointer in the notes so
+    the sticky-note index stays in sync.
+  - Nothing is deleted — an entry is only dropped from the notes after it was
+    successfully persisted to a topic file; pinned entries are never archived.
+  - Topic files are already in the semantic index, so archived facts stay
+    searchable (delta-synced by `syncIfStale` on the next search — no extra code).
+  - Wired into **both** write paths: `memory-auto` (auto-extraction archives
+    before skipping) and `POST /dsh-mind/memory` (manual adds archive instead of
+    returning 400; a 400 only remains when nothing is archivable).
+  - Configurable via the `memory-auto` row's `archive` block (`keywords`,
+    `fallback`, `minLength`, `leavePointerForNewTopic`); defaults match the
+    shipped topic files.
+
 ## [0.1.36] - 2026-08-25
 
 ### Changed

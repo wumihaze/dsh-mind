@@ -56,6 +56,11 @@
       config:
         intervalTurns: 10
         debounceMs: 90000
+        # When extraction would exceed the sticky-note budget, older notes are
+        # auto-archived into per-topic files (keyword-routed) to make room.
+        # Override routing via `keywords` / `fallback` / `minLength` here.
+        archive:
+          leavePointerForNewTopic: true
 
     - id: memory-inject
       name: '@wumihaze/dsh-mind/memory/inject'

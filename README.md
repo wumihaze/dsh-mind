@@ -284,19 +284,18 @@ Yes. `dsh plugin remove dsh-mind` removes the bundle but all data files remain i
 Letta is a full agent framework with server-side memory. dsh-mind is a lightweight DSH bundle: no server, no database, file-based storage, and it integrates into your existing DSH agent rather than replacing it. Think of it as "memory as a file" vs "memory as a service".
 
 **Will the agent remember everything?**
-The sticky-notes file has a 2200-character budget. The agent is nudged to review and consolidate memories, so it keeps the most important facts. The experience library has no budget — it holds your curated per-topic docs.
+The sticky-notes file has a 2200-character budget. `memory-auto` extracts durable facts after conversations; when adding would exceed the budget, older notes are automatically archived into the matching topic file (keyword-routed; pinned notes are never touched) instead of being dropped. The experience library has no budget — it holds your curated per-topic docs, and archived facts stay searchable there.
 
 **What happens to archived skills?**
 Archived skills move to `~/.dsh/skills/_archived/<name>/`. They're no longer loaded into the agent's skill list, but you can restore them anytime with `dsh-mind restore <name>`.
 
-**Why doesn't it auto-extract memory or inject memories into the prompt?**
-dsh-mind's memory is **tool-based and agent-initiated**: the agent reads/writes its
-sticky notes with the `memory` tool, and `memory-nudge` reminds it to review after
-a noteworthy event. This is deliberate — it keeps the context budget small (2200
-chars) and adds no extra LLM calls or prompt bloat. Some DSH memory plugins
-instead auto-extract facts after each conversation or inject memories directly
-into the prompt every turn (always-available recall). That is more automatic but
-costs tokens and context. dsh-mind favors the lightweight, budget-conscious path.
+**Does it auto-extract memory or inject memories into the prompt?**
+Partly, and it is now self-maintaining: `memory-auto` extracts durable facts after
+conversations, and pinned notes are injected every turn (`memory-inject`).
+Extraction is budget-bounded — when the sticky notes would exceed the 2200-char
+budget, older notes are auto-archived into topic files (since 0.2.0) so nothing is
+silently dropped. The design stays lightweight: file-based, no server, and
+archived facts remain searchable in the experience library.
 
 **Does the Web GUI follow my language?**
 Yes — the panel is zh/en and follows the DSH app language.

@@ -6,8 +6,10 @@
  * `intervalTurns` assistant steps, debounces `debounceMs` and calls the model
  * (the session's own route, or a configured provider/model) to pull short
  * bullets out of the recent transcript. Output is filtered for secrets,
- * deduplicated against existing entries, and skipped when it would exceed the
- * budget — so auto-extraction never bloats or corrupts the memory.
+ * deduplicated against existing entries, and when it would exceed the budget
+ * older entries are first archived into topic files (see `memory/archive`) to
+ * make room — extraction only skips when nothing is archivable, so
+ * auto-extraction never bloats or corrupts the memory.
  *
  * This is what makes memory "self-maintaining" without the agent having to
  * remember to call the `memory` tool.
@@ -22,6 +24,8 @@ import { dshHomePath } from '@deepseek-ai/dsh-home-paths'
 import { foldRequestHeader } from '@deepseek-ai/dsh-session'
 import { BlockAssembler, createUserMessage, type Message } from '@deepseek-ai/dsh-llm'
 import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
+import { readPins } from './pins.ts'
+import { archiveOverflow, type ArchiveConfig } from './archive.ts'
 
 /** Plugin name for the Loader manifest. */
 export const name = 'memory-auto'
@@ -48,8 +52,10 @@ export interface Config {
   maxOutputTokens?: number
   /** Override dsh home (memory file lives at `<root>/memory/MEMORY.md`). */
   memoryRoot?: string
-  /** Sticky-note budget; extraction is skipped when it would exceed this (default `2200`). */
+  /** Sticky-note budget; overflow is archived to topic files, or extraction is skipped when nothing is archivable (default `2200`). */
   budget?: number
+  /** Archive-on-overflow settings (keyword routing, fallback topic, min length, new-topic pointer). */
+  archive?: ArchiveConfig
 }
 
 const EXTRACT_SYSTEM = [
@@ -227,7 +233,17 @@ export function apply(ctx: Context, config: Config): void {
     const next = [...existing, ...fresh]
     const total = next.join('\n').length
     if (total > budget) {
-      ctx.logger.warn(`memory-auto: skipping ${fresh.length} candidate(s) — would exceed ${budget}-char budget`)
+      // Archive older notes into topic files to make room; keep the fresh facts.
+      const pinned = readPins(root, existing)
+      const res = archiveOverflow(next, { root, pinned, protected: fresh, budget, ...(config.archive ?? {}) })
+      if (res.archived.length === 0) {
+        ctx.logger.warn(`memory-auto: nothing archivable to make room — skipping ${fresh.length} candidate(s) (over ${budget}-char budget)`)
+        return
+      }
+      writeEntries(path, res.entries)
+      ctx.logger.info(
+        `memory-auto: archived ${res.archived.length} entry(ies) to ${[...new Set(res.archived.map((a) => a.topic))].join(', ')}; appended ${fresh.length} fact(s)`,
+      )
       return
     }
     writeEntries(path, next)

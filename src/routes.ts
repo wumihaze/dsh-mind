@@ -19,6 +19,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { readFile, writeFile, mkdir, readdir, rm } from 'node:fs/promises'
 import { readPins, togglePin } from './memory/pins.ts'
+import { archiveOverflow } from './memory/archive.ts'
 import { resolveSearchConfig, semanticSearch } from './search/index.ts'
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -176,13 +177,22 @@ export function mountMindRoutes(host: MindHost): () => void {
           const next = [...entries, text]
           const total = next.join('\n').length
           if (total > 2200) {
-            return err(res, `memory budget exceeded: ${total} > 2200 characters; replace or remove an entry first`, 400)
+            // Archive older notes into topic files to make room for the new entry
+            // instead of failing outright (see `memory/archive`).
+            const pinned = readPins(DSH_HOME, entries)
+            const archived = archiveOverflow(next, { root: DSH_HOME, pinned, protected: [text], budget: 2200 })
+            if (archived.archived.length === 0) {
+              return err(res, `memory budget exceeded: ${total} > 2200 characters; nothing archivable to make room`, 400)
+            }
+            await writeMemory(archived.entries)
+            const topics = await listMemoryTopics()
+            json(res, { entries: archived.entries, topics, pinned: readPins(DSH_HOME, archived.entries), totalChars: archived.entries.join('\n').length, budget: 2200 }, 201)
+            return
           }
           entries.push(text)
           await writeMemory(entries)
           const topics = await listMemoryTopics()
-          const pinned = readPins(DSH_HOME, entries)
-          json(res, { entries, topics, pinned, totalChars: total, budget: 2200 }, 201)
+          json(res, { entries, topics, pinned: readPins(DSH_HOME, entries), totalChars: total, budget: 2200 }, 201)
           return
         }
         if (req.method !== 'GET') return err(res, 'method not allowed', 405)
