@@ -46,7 +46,7 @@
     - id: memory-nudge
       name: '@wumihaze/dsh-mind/memory/nudge'
       config:
-        intervalTurns: 8
+        intervalTurns: 50
 
     - id: memory-guidance
       name: '@wumihaze/dsh-mind/memory/guidance'

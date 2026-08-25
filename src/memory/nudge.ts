@@ -24,13 +24,13 @@ export const name = 'memory-review-nudge'
 export interface Config {
   /**
    * Assistant steps between review reminders while the signal is active
-   * (default `8`).
+   * (default `50`).
    */
   intervalTurns?: number
 }
 
 export const Config: z<Config> = z.object({
-  intervalTurns: z.number().default(8),
+  intervalTurns: z.number().default(50),
 })
 
 const PLUGIN_SOURCE: MessageSource = { kind: 'plugin', plugin: 'memory-review-nudge' }
